@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<assets>
+  <textures>
+    <!-- Menu -->
+    <texture id="1000">res/textures/logo.png</texture>
+
+    <!-- Arenas -->
+    <texture id="2000">res/textures/basic_arena.png</texture>
+    <texture id="2001">res/textures/basic_arena_collisionmap.png</texture>
+    <texture id="2002">res/textures/basic_arena2.png</texture>
+    <texture id="2003">res/textures/basic_arena2_collisionmap.png</texture>
+
+
+    <!-- sprites -->
+  </textures>
+  <sounds>
+    <!-- music -->
+    <sound id="1000">res/sound/music/cartoon_theme.ogg</sound>
+  </sounds>
+</assets>

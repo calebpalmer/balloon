@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<arenas>
+  <arena id="1">
+    <texture>2000</texture>
+    <collisions>2001</collisions>
+    <spawn_points>
+      <spawn_point id="1" x="130" y="320" />
+    </spawn_points>
+  </arena>
+
+  <arena id="2">
+    <texture>2002</texture>
+    <collisions>2003</collisions>
+    <spawn_points>
+      <spawn_point id="1" x="130" y="600" />
+    </spawn_points>
+  </arena>
+  
+</arenas>
