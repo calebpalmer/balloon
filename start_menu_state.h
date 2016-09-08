@@ -7,7 +7,9 @@
 #include <string>
 #include <memory>
 
-class StartMenuState : public CapEngine::GameState {
+#include "control_scheme_listener.h"
+
+class StartMenuState : public CapEngine::GameState, public ControlSchemeListener {
  public:
   StartMenuState(Uint32 windowID);
   ~StartMenuState();
@@ -15,6 +17,7 @@ class StartMenuState : public CapEngine::GameState {
   virtual void update(double ms) override; // GameState
   virtual bool onLoad() override; // GameState
   virtual bool onDestroy() override; // GameState
+  virtual void receiveInput(std::string input) override; //ControlSchemeListener
 
   static void startButtonCallback(void* context);
   static void exitButtonCallback(void* context);

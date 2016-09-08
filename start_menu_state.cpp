@@ -33,7 +33,7 @@ bool StartMenuState::onLoad(){
 						     , buttonInactiveColour, buttonActiveColour
 						     ));
   //dynamic_cast<TextButton*>(pStoryButton.get())->setIndicator("res/textures/turtle_shell.png");
-  pStoryButton->registerCallback(&startButtonCallback, this);
+  pStoryButton->registerCallback(&arenaButtonCallback, this);
 
   unique_ptr<Button> pArenaButton(
 				      new TextButton(m_windowID, "2 Player", fontDir.str(), 65,
@@ -114,4 +114,11 @@ void StartMenuState::exitButtonCallback(void* context){
 
 void StartMenuState::arenaButtonCallback(void* context){
   reinterpret_cast<StartMenuState*>(context)->m_startArenaGame = true; 
+}
+
+/**
+   Function to receive input from a ControlScheme
+ **/
+void StartMenuState::receiveInput(string input){
+  
 }

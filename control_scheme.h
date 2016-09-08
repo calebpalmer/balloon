@@ -12,22 +12,12 @@
   to other inputs.
  */
 class ControlScheme {
-  
- public:
-  enum Input {
-    JUMP,
-    GO_LEFT,
-    GO_RIGHT,
-    MENU
-  };
-
+ public:  
   virtual ~ControlScheme() {}
-  virtual void listen(std::shared_ptr<ControlSchemeListener> listener) = 0;
-  virtual void unlisten(ControlSchemeListener* listener) = 0;
-
- protected:
-  const unsigned int m_numInputs = 4;
-
+  virtual void listen(ControlSchemeListener* pListener) = 0;
+  virtual void unlisten(ControlSchemeListener* pListener) = 0;
+  virtual void disable() = 0;
+  virtual void enable() = 0;
 };
 
 #endif // KEYBOARD_CONTROL_SCHEME

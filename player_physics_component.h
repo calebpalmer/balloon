@@ -21,7 +21,7 @@ class PlayerPhysicsComponent : public CapEngine::PhysicsComponent {
 
  private:
   const int JUMP_VELOCITY = -200;
-  const int JUMP_TURN_ACCELERATION = 150;
+  const int JUMP_TURN_ACCELERATION = 200;
   const int RUN_VELOCITY = 200;
   const int RUN_FRICTION = 1000;
   State m_state;

@@ -5,55 +5,62 @@
 using namespace std;
 using namespace CapEngine;
 
-PlayerInputComponent::PlayerInputComponent() :
-  doJump(false) {
-
-  Locator::eventDispatcher->subscribe(this, controllerEvent);
+PlayerInputComponent::PlayerInputComponent(ControlScheme* pControlScheme) {
+  // listen to the ControlSchemex
+  this->subscribe(pControlScheme);
 }
 
-PlayerInputComponent::~PlayerInputComponent(){
-  Locator::eventDispatcher->unsubscribe(this);
-}
+PlayerInputComponent::~PlayerInputComponent(){ }
 
 void PlayerInputComponent::update(GameObject* object){
-  if(doJump){
-    int messageId = object->generateMessageId();
-    object->send(messageId, JUMP_MESSAGE);
-    doJump = false;
-  }
-  if(doPause){
-    //unique_ptr<GameState> pPauseState(new PauseState(m_windowID));
-    //CapEngine::pushState(std::move(pPauseState));
-    doPause= false;
-  }
-  
-  if(m_pController){
-    if(SDL_GameControllerGetButton(m_pController->getGameController(), SDL_CONTROLLER_BUTTON_DPAD_LEFT) == 1){
-      object->send(-1, "GO LEFT");
+  while (!m_inputs.empty()){
+    // get first input
+    string message = m_inputs.front();
+
+    // process the input
+    if(message == "JUMP"){
+      int messageId = object->generateMessageId();
+      object->send(messageId, JUMP_MESSAGE);
     }
-    else if(SDL_GameControllerGetButton(m_pController->getGameController(), SDL_CONTROLLER_BUTTON_DPAD_RIGHT) == 1){
-      object->send(-1, "GO RIGHT");
+    
+    else if(message == "LEFT"){
+      object->send(-1, message);
     }
-  }  
+    
+    else if(message == "RIGHT"){
+      object->send(-1, message);
+    }
+
+    // pop the input because we're done with it
+    m_inputs.pop();
+  }
 }
 
-// void PlayerInputComponent::receiveEvent(SDL_Event event, Time* time){
-//   if(event.type == SDL_CONTROLLERBUTTONDOWN){
-//     const SDL_ControllerButtonEvent* controllerEvent = reinterpret_cast<const SDL_ControllerButtonEvent*>(&event);
-//     SDL_GameControllerButton button = static_cast<SDL_GameControllerButton>(controllerEvent->button);
-//     if(button == SDL_CONTROLLER_BUTTON_A){
-//       doJump = true;
-//     }
-//   }
-//   else if (event.type == SDL_CONTROLLERBUTTONUP){
-//     const SDL_ControllerButtonEvent* controllerEvent = reinterpret_cast<const SDL_ControllerButtonEvent*>(&event);
-//     SDL_GameControllerButton button = static_cast<SDL_GameControllerButton>(controllerEvent->button);
-//     if(button == SDL_CONTROLLER_BUTTON_START){
-//       doPause = true;
-//     }
-//   }
-// }
-
-void PlayerInputComponent::receiveInput(ControlScheme::Input input){
-  
+/**
+   Receives input from a ControlScheme that this object is listening to
+ */
+void PlayerInputComponent::receiveInput(string  input){
+  m_inputs.push(input);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

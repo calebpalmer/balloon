@@ -7,10 +7,10 @@
 using namespace std;
 using namespace CapEngine;
 
-shared_ptr<GameObject> makePlayer(Uint32 windowID, ControlScheme& controlScheme){
+shared_ptr<GameObject> makePlayer(Uint32 windowID, ControlScheme* pControlScheme){
   shared_ptr<GameObject> pGameObject(new GameObject(true));
 
-  shared_ptr<InputComponent> pInputComponent(new PlayerInputComponent(pController));
+  shared_ptr<InputComponent> pInputComponent(new PlayerInputComponent(pControlScheme));
   shared_ptr<PhysicsComponent> pPhysicsComponent(new PlayerPhysicsComponent());
   shared_ptr<GraphicsComponent> pGraphicsComponent(new DumbGraphicsComponent(windowID, 40, 60, Colour(0, 255, 0)));
   shared_ptr<CustomComponent> pCustomComponent(new NullCustomComponent());
@@ -27,7 +27,5 @@ shared_ptr<GameObject> makePlayer(Uint32 windowID, ControlScheme& controlScheme)
   pGameObject->setOrientation(zeroVector);
   pGameObject->setVelocity(zeroVector);
 
-  controlScheme.listen(pGameObject);
-  
   return pGameObject;
 }

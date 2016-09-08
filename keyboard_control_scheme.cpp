@@ -2,69 +2,103 @@
 
 #include <cassert>
 
+std::map<SDL_Keycode, KeyInput> KeyboardControlScheme::s_defaultMap;
+
 /**
    Loads the default map as the input actions
  */
 KeyboardControlScheme::KeyboardControlScheme(){
   m_keyMap = getDefaultMap();
-  assert(m_keyMap.size() >= ControlScheme::m_numInputs);
+  this->registerEvents();
 }
 
 
 /**
    Loads the inputted map as the keyboard to input actions
  **/
-KeyboardControlScheme::KeyboardControlScheme(std::map<SDL_Keycode, ControlScheme::Input> map){
+KeyboardControlScheme::KeyboardControlScheme(std::map<SDL_Keycode, KeyInput> map){
   m_keyMap = map;
-  assert(m_keyMap.size() >= ControlScheme::m_numInputs);
+  this->registerEvents();
 }
 
 /**
    Returns a default keymapping
  */
-std::map<SDL_Keycode, ControlScheme::Input> KeyboardControlScheme::getDefaultMap(){
+std::map<SDL_Keycode, KeyInput> KeyboardControlScheme::getDefaultMap(){
   if(s_defaultMap.size() == 0){
     // load the static default map
 
-    s_defaultMap[SDLK_SPACE] = ControlScheme::JUMP;
-    s_defaultMap[SDLK_LEFT] = ControlScheme::GO_LEFT;
-    s_defaultMap[SDLK_RIGHT] = ControlScheme::GO_RIGHT;
-    s_defaultMap[SDLK_ESCAPE] = ControlScheme::MENU;
+    // keyup inputs
+    s_defaultMap[SDLK_SPACE] = KeyInput("JUMP", EventType_KeyDown);;
+    s_defaultMap[SDLK_ESCAPE] = KeyInput("PAUSE", EventType_KeyDown);
+
+    // hold key inputs
+    s_defaultMap[SDLK_LEFT] = KeyInput("LEFT", EventType_KeyPressAndHold);
+    s_defaultMap[SDLK_RIGHT] = KeyInput("RIGHT", EventType_KeyPressAndHold);
+    
+
   }
 
-  assert(s_defaultMap.size() >= ControlScheme::m_numInputs);
   return s_defaultMap;
 }
 
-void KeyboardControlScheme::remapInput(SDL_Keycode keycode, ControlScheme::Input input){
+void KeyboardControlScheme::remapInput(SDL_Keycode keycode, KeyInput input){
   m_keyMap[keycode] = input;
 }
 
 /**
    Receive  SDL Events and handle them.
- */
+*/
 void KeyboardControlScheme::receiveEvent(SDL_Event event, CapEngine::Time *time){
-  // Check if this is a keyboard type event
-  if(event.type == SDL_KEYUP || event.type == SDL_KEYDOWN){
-    SDL_Keycode keycode = (reinterpret_cast<SDL_KeyboardEvent*>(&event))->keysym.sym;
-    auto it = m_keyMap.find(keycode);
-    if(it != m_keyMap.end()){
-      // for each listener
-      for(auto &listener : m_pListeners){
-	// notify this listener of the event
-	listener->receiveInput(it->second);
+  if(m_enabled){
+    // Check if this is a keyboard type event
+    if(event.type == SDL_KEYUP || event.type == SDL_KEYDOWN){
+      SDL_Keycode keycode = (reinterpret_cast<SDL_KeyboardEvent*>(&event))->keysym.sym;
+      auto it = m_keyMap.find(keycode);
+      if(it != m_keyMap.end()){
+
+	//  Process Key Down inputs
+	if(event.type == SDL_KEYDOWN && it->m_eventType == EventType_KeyDown){
+	  // for each listener
+	  for(auto &listener : m_pListeners){
+	    // notify this listener of the event
+	    listener->receiveInput((it->second).m_input);
+	  }
+	}
+
+	// Process KeyPressAndHold events
+	// Update their states and send inputs to listeners later
+	if(event.type == SDL_KEYDOWN && it->m_eventType == EventType_KeyDown){
+	  m_keyPressAndHoldStates[keycode] = true;
+	}
+	if(event.type == SDL_KEYUP && it->m_eventType == EventType_KeyDown){
+	  m_keyPressAndHoldStates[keycode] = false;
+	}
+      }
+    }
+
+    // send inputs for KeyPressAndHold events
+    for (const auto& keyState : m_keyPressAndHoldStates){
+      if(keyState.second == true){
+	// notify each listener
+	  for(auto &listener : m_pListeners){
+	    // notify this listener of the event
+	    std::string input (m_keyMap[keyState.first]).m_input;
+	    listener->receiveInput();
+	  }
       }
     }
   }
 }
 
+
 /**
    Registers listeners for Input events
  */
-void KeyboardControlScheme::listen(std::shared_ptr<ControlSchemeListener> pListener){
+void KeyboardControlScheme::listen(ControlSchemeListener* pListener){
   // Make sure that this is not already a listener
   for (auto  & i : m_pListeners){
-    if(i.get() == pListener.get()){
+    if(i == pListener){
       return;
     }
   }
@@ -78,7 +112,7 @@ void KeyboardControlScheme::listen(std::shared_ptr<ControlSchemeListener> pListe
 void KeyboardControlScheme::unlisten(ControlSchemeListener* pListener){
   auto i = m_pListeners.begin();
   for(; i != m_pListeners.end(); i++){
-    if(i->get() == pListener){
+    if(*i == pListener){
 	break;
       }
   }
@@ -87,5 +121,25 @@ void KeyboardControlScheme::unlisten(ControlSchemeListener* pListener){
   }
 }
 
+/**
+   Enables the ControlScheme
+ */
+void KeyboardControlScheme::enable(){
+  m_enabled = true;
+}
 
 
+/**
+   Disables the ControlScheme
+ */ 
+void KeyboardControlScheme::disable(){
+  m_enabled = false;
+}
+
+/**
+   Register this IEventSubscriber with the EventDispatcher
+ */
+void KeyboardControlScheme::registerEvents(){
+  int subscriptionMask = CapEngine::keyboardEvent;
+  this->subscribe(CapEngine::Locator::eventDispatcher, subscriptionMask);
+}

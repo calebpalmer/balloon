@@ -1,8 +1,10 @@
 #include "player_physics_component.h"
 
+#include <iostream>
+#include <cmath>
+
 #include "locator.h"
 #include "logger.h"
-#include <iostream>
 
 using namespace CapEngine;
 using namespace std;
@@ -34,7 +36,13 @@ void PlayerPhysicsComponent::update(GameObject* object, double timestep){
   // apply gravity to velocity
   //Vector gravity(0.0, GRAVITY);
   Vector newVelocity = CapEngine::applyAcceleration(acceleration, velocity, timestep);
+  bool maxHorizontalVelocityReached = std::abs(newVelocity.x) > RUN_VELOCITY ? true : false;
+  if(maxHorizontalVelocityReached){
+    newVelocity.x = (newVelocity.x < 0) ? (-1 * RUN_VELOCITY) : RUN_VELOCITY;
+  }
+
   object->setVelocity(newVelocity);
+
 
   // apply velocity to displacement
   Vector newPosition = CapEngine::applyDisplacement(object->getVelocity(), object->getPosition(), timestep);
@@ -79,7 +87,7 @@ bool PlayerPhysicsComponent::handleCollision(GameObject* object, CollisionType c
 }
 
 void PlayerPhysicsComponent::receive(GameObject* object, int messageId, string message){
-  if(message == "JUMP" && m_state != State::AIRBORN){
+  if(message == "JUMP"){
     Vector velocity = object->getVelocity();
     velocity.setY(JUMP_VELOCITY);
     object->setVelocity(velocity);
@@ -87,13 +95,15 @@ void PlayerPhysicsComponent::receive(GameObject* object, int messageId, string m
     m_state = State::AIRBORN;
   }
   
-  else if(message == "GO RIGHT"){
+  else if(message == "RIGHT"){
     Vector velocity = object->getVelocity();
+    // If not airborn, then we can run and turn at normal velocity
     if(m_state != State::AIRBORN){
       velocity.setX(RUN_VELOCITY);
       object->setVelocity(velocity);
       m_state = State::RUNNING;
     }
+    // If we ARE airborn, apply an acceleration to the turning
     else{
       if(velocity.getY() <= 0.0){
 	Vector acceleration = object->getAcceleration();
@@ -103,14 +113,16 @@ void PlayerPhysicsComponent::receive(GameObject* object, int messageId, string m
     }
   }
 
-  else if(message == "GO LEFT"){
+  else if(message == "LEFT"){
     Vector velocity = object->getVelocity();
+    // If not airborn, then we can run and turn at normal velocity
     if(m_state != State::AIRBORN){
       velocity.setX(-RUN_VELOCITY);
       m_state = State::RUNNING;
       object->setVelocity(velocity);
     }
     else{
+      // If we ARE airborn, apply an acceleration to the turning
       if(velocity.getY() >= 0.0){
 	Vector acceleration = object->getAcceleration();
 	acceleration.setX(-JUMP_TURN_ACCELERATION);

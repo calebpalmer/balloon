@@ -7,6 +7,6 @@
 
 #include "control_scheme.h"
 
-std::shared_ptr<CapEngine::GameObject> makePlayer(Uint32 windowID, ControlScheme controlScheme);
+std::shared_ptr<CapEngine::GameObject> makePlayer(Uint32 windowID, ControlScheme* controlScheme);
 
 #endif // PLAYER_H

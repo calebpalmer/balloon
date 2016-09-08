@@ -9,6 +9,7 @@
 
 #include "player.h"
 #include "pausestate.h"
+#include "keyboard_control_scheme.h"
 
 using namespace CapEngine;
 using namespace std;
@@ -16,6 +17,42 @@ using namespace std;
 ArenaPlayState::ArenaPlayState(Uint32 windowID, int arenaID) :
   m_windowID(windowID), m_platformerMap(buildPlatformerMap("res/arenas.xml", arenaID))
   , m_arenaID(arenaID), m_startButtonPressed(false) {}
+
+
+/**
+   This gets run when the GameState is first loaded for use.
+ */
+bool ArenaPlayState::onLoad(){
+  // create control scheme using default map (default constructor)
+  m_pControlScheme.reset(new KeyboardControlScheme());
+  ControlSchemeListener::subscribe(m_pControlScheme.get());
+  
+  // create player
+  m_pPlayer = makePlayer(m_windowID, m_pControlScheme.get());
+  m_pPlayer->setAcceleration(Vector(0.0, GRAVITY));
+
+  auto spawnPoints = m_platformerMap.getSpawnPoints();
+  if(spawnPoints.size() > 0){
+    Vector spawnPoint;
+    spawnPoint.setX(spawnPoints[0].getX());
+    spawnPoint.setY(spawnPoints[0].getY() - (m_pPlayer->boundingPolygon()).height / 2);
+    m_pPlayer->setPosition(spawnPoint);
+  }
+  else{
+    m_pPlayer->setPosition(Vector(60, 400));
+  }
+  
+  Locator::eventDispatcher->subscribe(this, CapEngine::keyboardEvent | CapEngine::controllerEvent);
+  return true;
+}
+
+/**
+   This is run with the GameState is being removed
+ */
+bool ArenaPlayState::onDestroy(){
+  Locator::eventDispatcher->unsubscribe(this);
+  return true;
+}
 
 void ArenaPlayState::render(){
   m_platformerMap.render();
@@ -48,34 +85,8 @@ void ArenaPlayState::update(double ms){
   }
 }
 
-bool ArenaPlayState::onLoad(){
-  auto controllers = CapEngine::Controller::getConnectedControllers();
-  if(controllers.size() == 0){
-    throw CapEngineException("No controllers connected");
-  }
-  
-  m_pPlayer = makePlayer(m_windowID, controllers[0]);
-  m_pPlayer->setAcceleration(Vector(0.0, GRAVITY));
 
-  auto spawnPoints = m_platformerMap.getSpawnPoints();
-  if(spawnPoints.size() > 0){
-    Vector spawnPoint;
-    spawnPoint.setX(spawnPoints[0].getX());
-    spawnPoint.setY(spawnPoints[0].getY() - (m_pPlayer->boundingPolygon()).height / 2);
-    m_pPlayer->setPosition(spawnPoint);
-  }
-  else{
-    m_pPlayer->setPosition(Vector(60, 400));
-  }
-  
-  Locator::eventDispatcher->subscribe(this, CapEngine::keyboardEvent | CapEngine::controllerEvent);
-  return true;
-}
 
-bool ArenaPlayState::onDestroy(){
-  Locator::eventDispatcher->unsubscribe(this);
-  return true;
-}
 
 PlatformerMap ArenaPlayState::buildPlatformerMap(string arenaConfigPath, int arenaID){
   // open config files
@@ -128,6 +139,7 @@ PlatformerMap ArenaPlayState::buildPlatformerMap(string arenaConfigPath, int are
     throw CapEngineException(errorMsg.str());
   }
 
+
   PlatformerMap platformerMap(m_windowID, mapAssetID, collisionMapAssetID);
   for(auto& spawnPoint : arenaSpawnPoints){
     platformerMap.addSpawnPoint(spawnPoint);
@@ -136,6 +148,7 @@ PlatformerMap ArenaPlayState::buildPlatformerMap(string arenaConfigPath, int are
   return platformerMap;
 
 }
+
 
 void ArenaPlayState::receiveEvent(const SDL_Event event, CapEngine::Time* time){
   // if(event.type == SDL_CONTROLLERBUTTONUP){
@@ -147,6 +160,7 @@ void ArenaPlayState::receiveEvent(const SDL_Event event, CapEngine::Time* time){
   // }
 }
 
-void ArenaPlayState::receiveInput(ControlSchema::Input input) {
+
+void ArenaPlayState::receiveInput(std::string input) {
 
 }
