@@ -2,12 +2,12 @@
 
 #include <cassert>
 
-std::map<SDL_Keycode, KeyInput> KeyboardControlScheme::s_defaultMap;
+std::vector<std::pair<KeyInput, std::string> > KeyboardControlScheme::s_defaultMap;
 
 /**
    Loads the default map as the input actions
  */
-KeyboardControlScheme::KeyboardControlScheme(){
+KeyboardControlScheme::KeyboardControlScheme() {
   m_keyMap = getDefaultMap();
   this->registerEvents();
 }
@@ -16,7 +16,7 @@ KeyboardControlScheme::KeyboardControlScheme(){
 /**
    Loads the inputted map as the keyboard to input actions
  **/
-KeyboardControlScheme::KeyboardControlScheme(std::map<SDL_Keycode, KeyInput> map){
+KeyboardControlScheme::KeyboardControlScheme(std::vector<std::pair<KeyInput, std::string> > map){
   m_keyMap = map;
   this->registerEvents();
 }
@@ -24,26 +24,46 @@ KeyboardControlScheme::KeyboardControlScheme(std::map<SDL_Keycode, KeyInput> map
 /**
    Returns a default keymapping
  */
-std::map<SDL_Keycode, KeyInput> KeyboardControlScheme::getDefaultMap(){
+std::vector<std::pair<KeyInput, std::string> > KeyboardControlScheme::getDefaultMap(){
   if(s_defaultMap.size() == 0){
     // load the static default map
 
-    // keyup inputs
-    s_defaultMap[SDLK_SPACE] = KeyInput("JUMP", EventType_KeyDown);;
-    s_defaultMap[SDLK_ESCAPE] = KeyInput("PAUSE", EventType_KeyDown);
+    // keydown inputs
+    KeyInput spaceKeyDown(SDLK_SPACE, EventType_KeyDown);
+    s_defaultMap.push_back(std::make_pair(spaceKeyDown, "JUMP"));
 
-    // hold key inputs
-    s_defaultMap[SDLK_LEFT] = KeyInput("LEFT", EventType_KeyPressAndHold);
-    s_defaultMap[SDLK_RIGHT] = KeyInput("RIGHT", EventType_KeyPressAndHold);
-    
+    KeyInput escapeKeyDown(SDLK_ESCAPE, EventType_KeyDown);
+    s_defaultMap.push_back(std::make_pair(escapeKeyDown, "PAUSE"));
 
+    KeyInput leftKeyDown(SDLK_LEFT, EventType_KeyDown);
+    s_defaultMap.push_back(std::make_pair(leftKeyDown, "LEFT"));
+
+    KeyInput rightKeyDown(SDLK_RIGHT, EventType_KeyDown);
+    s_defaultMap.push_back(std::make_pair(rightKeyDown, "RIGHT"));
+
+    // keyups
+    KeyInput leftKeyUp(SDLK_LEFT, EventType_KeyUp);
+    s_defaultMap.push_back(std::make_pair(leftKeyUp, "STOPLEFT"));
+
+    KeyInput rightKeyUp(SDLK_RIGHT, EventType_KeyUp);
+    s_defaultMap.push_back(std::make_pair(rightKeyUp, "STOPRIGHT"));
   }
 
   return s_defaultMap;
 }
 
-void KeyboardControlScheme::remapInput(SDL_Keycode keycode, KeyInput input){
-  m_keyMap[keycode] = input;
+void KeyboardControlScheme::remapInput(KeyInput input, std::string message){
+  bool found = false;
+  for(auto & i : m_keyMap){
+    if(i.first == input){
+      i.second = message;
+      found = true;
+    }
+  }
+
+  if(!found){
+    m_keyMap.push_back(std::make_pair(input, message));
+  }
 }
 
 /**
@@ -54,43 +74,33 @@ void KeyboardControlScheme::receiveEvent(SDL_Event event, CapEngine::Time *time)
     // Check if this is a keyboard type event
     if(event.type == SDL_KEYUP || event.type == SDL_KEYDOWN){
       SDL_Keycode keycode = (reinterpret_cast<SDL_KeyboardEvent*>(&event))->keysym.sym;
-      auto it = m_keyMap.find(keycode);
-      if(it != m_keyMap.end()){
+      for(auto & it : m_keyMap) {
 
-	//  Process Key Down inputs
-	if(event.type == SDL_KEYDOWN && it->m_eventType == EventType_KeyDown){
+	auto currentKeyInput = it.first;
+	KeyInput receivedKeyInput;
+	if(event.type == SDL_KEYDOWN){
+	  receivedKeyInput =KeyInput(keycode, EventType_KeyDown);
+	}
+	else if(event.type == SDL_KEYUP){
+	  receivedKeyInput =KeyInput(keycode, EventType_KeyUp);
+	}
+	else{
+	  // Do Nothing.  Don't care about non keyboard events.
+	}
+
+	//  Process Input
+	if(currentKeyInput == receivedKeyInput){
 	  // for each listener
 	  for(auto &listener : m_pListeners){
 	    // notify this listener of the event
-	    listener->receiveInput((it->second).m_input);
+	    auto message = it.second;
+	    listener->receiveInput(message);
 	  }
 	}
-
-	// Process KeyPressAndHold events
-	// Update their states and send inputs to listeners later
-	if(event.type == SDL_KEYDOWN && it->m_eventType == EventType_KeyDown){
-	  m_keyPressAndHoldStates[keycode] = true;
-	}
-	if(event.type == SDL_KEYUP && it->m_eventType == EventType_KeyDown){
-	  m_keyPressAndHoldStates[keycode] = false;
-	}
-      }
-    }
-
-    // send inputs for KeyPressAndHold events
-    for (const auto& keyState : m_keyPressAndHoldStates){
-      if(keyState.second == true){
-	// notify each listener
-	  for(auto &listener : m_pListeners){
-	    // notify this listener of the event
-	    std::string input (m_keyMap[keyState.first]).m_input;
-	    listener->receiveInput();
-	  }
       }
     }
   }
 }
-
 
 /**
    Registers listeners for Input events

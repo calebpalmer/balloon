@@ -26,6 +26,7 @@ bool ArenaPlayState::onLoad(){
   // create control scheme using default map (default constructor)
   m_pControlScheme.reset(new KeyboardControlScheme());
   ControlSchemeListener::subscribe(m_pControlScheme.get());
+  m_pControlScheme->enable();
   
   // create player
   m_pPlayer = makePlayer(m_windowID, m_pControlScheme.get());

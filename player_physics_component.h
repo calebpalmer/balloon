@@ -11,6 +11,7 @@ class PlayerPhysicsComponent : public CapEngine::PhysicsComponent {
   };
   
  public:
+ PlayerPhysicsComponent() : m_doRun(false) {}
   void update(CapEngine::GameObject* object, double timestep) override;
   CapEngine::Rectangle boundingPolygon(const CapEngine::GameObject* object) const override;
   bool handleCollision(CapEngine::GameObject* object, CapEngine::CollisionType,
@@ -25,6 +26,7 @@ class PlayerPhysicsComponent : public CapEngine::PhysicsComponent {
   const int RUN_VELOCITY = 200;
   const int RUN_FRICTION = 1000;
   State m_state;
+  bool m_doRun;
 };
 
 

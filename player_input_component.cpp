@@ -31,6 +31,15 @@ void PlayerInputComponent::update(GameObject* object){
       object->send(-1, message);
     }
 
+    else if(message == "STOPLEFT"){
+      object->send(-1, message);
+    }
+
+    else if(message == "STOPRIGHT"){
+      object->send(-1, message);
+    }
+
+
     // pop the input because we're done with it
     m_inputs.pop();
   }

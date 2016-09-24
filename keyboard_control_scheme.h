@@ -11,17 +11,25 @@
 #include "control_scheme_listener.h"
 
 enum EventType {
+  EventType_Unknown,
   EventType_KeyUp,
   EventType_KeyDown,
   EventType_KeyPressAndHold
 };
   
-  class KeyInput{
+class KeyInput{
   public:
-  KeyInput(std::string input, EventType eventType) :
-    m_input(input), m_eventType(eventType) {}
+  KeyInput() :
+    m_keycode(SDL_SCANCODE_RETURN2), m_eventType(EventType_Unknown) {}
+    
+  KeyInput(SDL_Keycode keycode, EventType eventType) :
+    m_keycode(keycode), m_eventType(eventType) {}
 
-    std::string m_input;
+    bool operator==(const KeyInput& rightHandSide) {
+      return (this->m_keycode == rightHandSide.m_keycode) && (this->m_eventType == rightHandSide.m_eventType);
+    }
+
+    SDL_Keycode m_keycode;
     EventType m_eventType;
   };
 
@@ -29,7 +37,7 @@ enum EventType {
 class KeyboardControlScheme : public ControlScheme,  public CapEngine::IEventSubscriber {
  public:
   KeyboardControlScheme();
-  KeyboardControlScheme(std::map<SDL_Keycode, KeyInput> map);
+  KeyboardControlScheme(std::vector<std::pair<KeyInput, std::string> > map);
   
   // ControlScheme
   virtual void listen(ControlSchemeListener* pListener) override;
@@ -40,21 +48,20 @@ class KeyboardControlScheme : public ControlScheme,  public CapEngine::IEventSub
   // IEventSubscriber
   virtual void receiveEvent(SDL_Event event, CapEngine::Time* time) override;
 
-  void remapInput(SDL_Keycode keycode, KeyInput input);
-  void loadMap(std::map<SDL_Keycode, KeyInput>);
+  void remapInput(KeyInput input, std::string);
+  void loadMap(std::vector<KeyInput, std::string>);
   
  private:
   bool m_enabled;
-  static std::map<SDL_Keycode, KeyInput> s_defaultMap;
+  static std::vector<std::pair<KeyInput, std::string> > s_defaultMap;
   std::vector<ControlSchemeListener*> m_pListeners;
-  std::map<SDL_Keycode, KeyInput> m_keyMap;
-  std::map<SDL_Keycode, bool> m_keyPressAndHoldStates;
+  std::vector<std::pair<KeyInput, std::string> > m_keyMap;
 
   // disable copy constructor and assignment operator
   KeyboardControlScheme(const KeyboardControlScheme&);
   KeyboardControlScheme& operator=(const KeyboardControlScheme&);
   
-  std::map<SDL_Keycode, KeyInput> getDefaultMap();
+  std::vector<std::pair<KeyInput, std::string> > getDefaultMap();
   void registerEvents();
 };
 

@@ -10,12 +10,14 @@ using namespace CapEngine;
 using namespace std;
 
 void PlayerPhysicsComponent::update(GameObject* object, double timestep){
+  // get current vectors
   Vector position = object->getPosition();
   Vector velocity = object->getVelocity();
   Vector acceleration = object->getAcceleration();
 
-  // apply friction if not runnig or airborn
-  if(m_state == State::NEUTRAL && velocity.getX() != 0.0){
+  // apply FRICTION if not runnig or airborn to slowdown
+  if(!m_doRun && m_state == State::NEUTRAL && velocity.getX() != 0.0){
+    // apply friction when running to the right
     if(velocity.getX() > 0.0){
       double deltaX = -RUN_FRICTION * (timestep / 1000);
       velocity.setX(velocity.getX() + deltaX);
@@ -24,6 +26,7 @@ void PlayerPhysicsComponent::update(GameObject* object, double timestep){
       }
     }
 
+    // apply friction when running to the left
     else {
       double deltaX = RUN_FRICTION * (timestep / 1000);
       velocity.setX(velocity.getX() + deltaX);
@@ -33,7 +36,7 @@ void PlayerPhysicsComponent::update(GameObject* object, double timestep){
     }
   }
   
-  // apply gravity to velocity
+  // apply GRAVITY to velocity
   //Vector gravity(0.0, GRAVITY);
   Vector newVelocity = CapEngine::applyAcceleration(acceleration, velocity, timestep);
   bool maxHorizontalVelocityReached = std::abs(newVelocity.x) > RUN_VELOCITY ? true : false;
@@ -96,6 +99,7 @@ void PlayerPhysicsComponent::receive(GameObject* object, int messageId, string m
   }
   
   else if(message == "RIGHT"){
+    m_doRun = true;
     Vector velocity = object->getVelocity();
     // If not airborn, then we can run and turn at normal velocity
     if(m_state != State::AIRBORN){
@@ -114,6 +118,7 @@ void PlayerPhysicsComponent::receive(GameObject* object, int messageId, string m
   }
 
   else if(message == "LEFT"){
+    m_doRun = true;
     Vector velocity = object->getVelocity();
     // If not airborn, then we can run and turn at normal velocity
     if(m_state != State::AIRBORN){
@@ -131,9 +136,27 @@ void PlayerPhysicsComponent::receive(GameObject* object, int messageId, string m
     }
   }
 
-  else{
-    if(m_state != State::AIRBORN){
-      m_state == State::NEUTRAL;
+    else if (message == "STOPLEFT" || message == "STOPRIGHT"){
+      m_doRun = false;
+      Vector velocity = object->getVelocity();
+      // on ground
+      if(m_state != State::AIRBORN){
+	velocity.setX(0.0);
+	object->setVelocity(velocity);
+	m_state = State::NEUTRAL;
+      }
+      // in air
+      else{
+	Vector acceleration = object->getAcceleration();
+	acceleration.setX(0.0);
+	object->setAcceleration(acceleration);
+      }
     }
+
+  else{
+    // if(m_state != State::AIRBORN){
+    //   m_state == State::NEUTRAL;
+    // }
+    // do nothing
   }
 }
