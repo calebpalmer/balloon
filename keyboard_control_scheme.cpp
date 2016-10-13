@@ -47,6 +47,9 @@ std::vector<std::pair<KeyInput, std::string> > KeyboardControlScheme::getDefault
 
     KeyInput rightKeyUp(SDLK_RIGHT, EventType_KeyUp);
     s_defaultMap.push_back(std::make_pair(rightKeyUp, "STOPRIGHT"));
+
+    KeyInput tildeKeyUp(SDLK_BACKQUOTE, EventType_KeyUp);
+    s_defaultMap.push_back(std::make_pair(tildeKeyUp, "TOGGLE DIAGNOSTICS"));
   }
 
   return s_defaultMap;

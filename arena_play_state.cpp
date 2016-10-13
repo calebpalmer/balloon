@@ -10,13 +10,15 @@
 #include "player.h"
 #include "pausestate.h"
 #include "keyboard_control_scheme.h"
+#include "player_physics_component.h"
+#include "diagnostics.h"
 
 using namespace CapEngine;
 using namespace std;
 
 ArenaPlayState::ArenaPlayState(Uint32 windowID, int arenaID) :
   m_windowID(windowID), m_platformerMap(buildPlatformerMap("res/arenas.xml", arenaID))
-  , m_arenaID(arenaID), m_startButtonPressed(false) {}
+  , m_arenaID(arenaID), m_startButtonPressed(false), m_showDiagnostics(false) {}
 
 
 /**
@@ -58,6 +60,18 @@ bool ArenaPlayState::onDestroy(){
 void ArenaPlayState::render(){
   m_platformerMap.render();
   m_pPlayer->render();
+
+  if(m_showDiagnostics){
+    // gather diagnostic info for display
+    auto physicsComponent = m_pPlayer->getPhysicsComponent();
+    PlayerPhysicsComponent::State state = dynamic_cast<PlayerPhysicsComponent*>(physicsComponent.get())->getState();
+    DiagnosticData diagData= {state};
+    int xStart = 0;
+    int yStart = 0;
+    string font = "res/fonts/tahoma.ttf";
+    int fontSize = 14;
+    Diagnostics::display(m_windowID,  diagData, xStart, yStart, font, fontSize);
+  }
 }
 
 void ArenaPlayState::update(double ms){
@@ -163,5 +177,9 @@ void ArenaPlayState::receiveEvent(const SDL_Event event, CapEngine::Time* time){
 
 
 void ArenaPlayState::receiveInput(std::string input) {
+  if(input == "TOGGLE DIAGNOSTICS"){
+    // flip around m_showDiagnostics
+    m_showDiagnostics = !m_showDiagnostics;
+  }
 
 }

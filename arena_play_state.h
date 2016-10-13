@@ -27,6 +27,7 @@ class ArenaPlayState : public CapEngine::GameState, public CapEngine::IEventSubs
   std::shared_ptr<CapEngine::GameObject> m_pPlayer;
   std::shared_ptr<ControlScheme> m_pControlScheme;
   bool m_startButtonPressed;
+  bool m_showDiagnostics;
 };
 
 #endif // ARENA_PLAY_STATE_H

@@ -105,13 +105,11 @@ void PlayerPhysicsComponent::receive(GameObject* object, int messageId, string m
       double newHorizontalVelocity = (-1) * JUMP_HORIZONTAL_VELOCITY;
       velocity.setX(newHorizontalVelocity);
     }
-
     // In air left turn
     if(m_doAirLeftTurn && velocity.getX() >= 0.0){
       double newHorizontalVelocity = JUMP_HORIZONTAL_VELOCITY;
       velocity.setX(newHorizontalVelocity);
     }
-
 
     // set the new velocity
     object->setVelocity(velocity);
@@ -130,15 +128,16 @@ void PlayerPhysicsComponent::receive(GameObject* object, int messageId, string m
     }
     // If we ARE airborn, apply an acceleration to the turning
     else{
+      // check if we need to do a full turn on a jump
+      // set a flag to be checked on next JUMP message
+      if(velocity.getX() <= 0.0){
+	m_doAirRightTurn = true;
+      }
+      else{
+	m_doAirRightTurn = false;
+      }
+      // You can turn a bit without doing an in air jump
       if(velocity.getY() <= 0.0){
-
-	// check if we need to do a full turn on a jump
-	if(velocity.getX() <= 0.0){
-	  m_doAirRightTurn = true;
-	}
-	else{
-	  m_doAirRightTurn = false;
-	}
 	Vector acceleration = object->getAcceleration();
 	acceleration.setX(JUMP_TURN_ACCELERATION);
 	object->setAcceleration(acceleration);
@@ -157,6 +156,8 @@ void PlayerPhysicsComponent::receive(GameObject* object, int messageId, string m
     }
     // if AIRBORN
     else{
+      // check if we need to do a full turn on a jump      
+      // set a flag to be checked on next JUMP message
       if(velocity.getX() >= 0.0){
 	m_doAirLeftTurn = true;
       }
@@ -202,4 +203,11 @@ void PlayerPhysicsComponent::receive(GameObject* object, int messageId, string m
     // }
     // do nothing
   }
+}
+
+/**
+   Accessor function for current state
+ */
+PlayerPhysicsComponent::State PlayerPhysicsComponent::getState() const{
+  return m_state;
 }

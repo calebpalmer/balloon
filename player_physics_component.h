@@ -4,13 +4,13 @@
 #include "CapEngine.h"
 
 class PlayerPhysicsComponent : public CapEngine::PhysicsComponent {
+ public:
   enum State{
     RUNNING,
     AIRBORN,
     NEUTRAL
   };
-  
- public:
+
  PlayerPhysicsComponent() : m_doRun(false),
     m_doAirLeftTurn(false), m_doAirRightTurn(false) {}
   void update(CapEngine::GameObject* object, double timestep) override;
@@ -20,6 +20,7 @@ class PlayerPhysicsComponent : public CapEngine::PhysicsComponent {
 		       CapEngine::Vector collisionLocation) override;
   bool handlesCollisions();
   void receive(CapEngine::GameObject* object, int messageId, std::string message) override;
+  State getState() const;
 
  private:
   const int JUMP_VELOCITY = -200;
