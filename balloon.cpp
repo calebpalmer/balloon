@@ -9,16 +9,21 @@ using namespace std;
 
 struct Arguments {
   bool audioOff;
+  bool fullscreen;
 };
 
 Arguments parseArgs(int argc, char* argv[]){
   Arguments args;
   args.audioOff = false;
+  args.fullscreen = false;
   
   for(int i = 1; i < argc; i++){
     string arg = argv[i];
     if(arg == "--noaudio"){
       args.audioOff = true;
+    }
+    if(arg == "-f"){
+      args.fullscreen = true;
     }
   }
 
@@ -33,7 +38,7 @@ int main(int argc, char* argv[]) {
     windowParams.width = 1200;
     windowParams.height = 800;
     windowParams.pDepth = 32;
-    windowParams.fullScreen = false;
+    windowParams.fullScreen = args.fullscreen;
     windowParams.opengl = false;
   
     auto windowID = CapEngine::init(windowParams);
