@@ -65,7 +65,8 @@ void ArenaPlayState::render(){
     // gather diagnostic info for display
     auto physicsComponent = m_pPlayer->getPhysicsComponent();
     PlayerPhysicsComponent::State state = dynamic_cast<PlayerPhysicsComponent*>(physicsComponent.get())->getState();
-    DiagnosticData diagData= {state};
+    float fps = CapEngine::Locator::videoManager->getFPS();
+    DiagnosticData diagData= {fps, state};
     int xStart = 0;
     int yStart = 0;
     string font = "res/fonts/tahoma.ttf";

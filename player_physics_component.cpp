@@ -80,7 +80,9 @@ bool PlayerPhysicsComponent::handleCollision(GameObject* object, CollisionType c
     Rectangle boundingPolygon = object->boundingPolygon();
     currentPosition.setY(collisionVector.getY() - (boundingPolygon.height / 2));
     object->setPosition(currentPosition);
-    m_state = State::NEUTRAL;
+    if(m_state != State::RUNNING){
+      m_state = State::NEUTRAL;
+    }
 
     // remove horizontal acceleration from mid-air turns
     m_doAirRightTurn = false;
