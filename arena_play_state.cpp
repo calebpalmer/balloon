@@ -69,7 +69,8 @@ void ArenaPlayState::render(){
     float fps = CapEngine::Locator::videoManager->getFPS();
     CapEngine::Vector position = m_pPlayer->getPosition();
     CapEngine::Vector velocity = m_pPlayer->getVelocity();
-    DiagnosticData diagData= {fps, state, position, velocity};
+    CapEngine::Vector acceleration = m_pPlayer->getAcceleration();
+    DiagnosticData diagData= {fps, state, position, velocity, acceleration};
     int xStart = 0;
     int yStart = 0;
     string font = "res/fonts/tahoma.ttf";

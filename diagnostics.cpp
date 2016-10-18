@@ -45,6 +45,15 @@ void Diagnostics::display(Uint32 windowID, DiagnosticData data, double x, double
   CapEngine::Locator::videoManager->drawTexture(windowID, x, newY, velocityTexture);
   CapEngine::Locator::videoManager->closeTexture(velocityTexture);
 
+  // draw acceleration
+  std::string accelerationStr = (data.acceleration).toString();
+  std::stringstream accelerationStream;
+  accelerationStream << "Acceleration: " << accelerationStr;
+  CapEngine::Surface* accelerationSurface = getSurface(accelerationStream.str(), font, fontSize);
+  CapEngine::Texture* accelerationTexture = CapEngine::Locator::videoManager->createTextureFromSurface(accelerationSurface, true);
+  newY = y + 4 * (textureHeight + PADDING);
+  CapEngine::Locator::videoManager->drawTexture(windowID, x, newY, accelerationTexture);
+  CapEngine::Locator::videoManager->closeTexture(accelerationTexture);
 }
 
 /**
