@@ -22,6 +22,7 @@ class PlayerPhysicsComponent : public CapEngine::PhysicsComponent {
   bool handlesCollisions();
   void receive(CapEngine::GameObject* object, int messageId, std::string message) override;
   State getState() const;
+  void setGravity(int gravity);
 
  private:
   const int JUMP_VELOCITY = -200;
@@ -29,11 +30,11 @@ class PlayerPhysicsComponent : public CapEngine::PhysicsComponent {
   const int JUMP_HORIZONTAL_VELOCITY = 200;
   const int RUN_VELOCITY = 175;
   const int RUN_FRICTION = 1000;
+  int m_gravity;
   State m_state;
   bool m_doRun;
   bool m_doAirRightTurn;
   bool m_doAirLeftTurn;
 };
-
 
 #endif // PLAYER_PHYSICS_COMPONENT_H

@@ -52,6 +52,11 @@ void PlayerPhysicsComponent::update(GameObject* object, double timestep){
   Vector newPosition = CapEngine::applyDisplacement(object->getVelocity(), object->getPosition(), timestep);
   object->setPosition(newPosition);
 
+  // Reset acceleration to gravity in case of ground collision removing it
+  acceleration = object->getAcceleration();
+  acceleration.setY(m_gravity);
+  object->setAcceleration(acceleration);
+
 }
 
 Rectangle PlayerPhysicsComponent::boundingPolygon(const GameObject* object) const{
@@ -89,7 +94,11 @@ bool PlayerPhysicsComponent::handleCollision(GameObject* object, CollisionType c
     m_doAirLeftTurn = false;
     Vector acceleration = object->getAcceleration();
     acceleration.setX(0.0);
+
+    // set vertical acceleration to 0
+    acceleration.setY(0.0);
     object->setAcceleration(acceleration);
+
   }
   return false;
 }
@@ -212,4 +221,11 @@ void PlayerPhysicsComponent::receive(GameObject* object, int messageId, string m
  */
 PlayerPhysicsComponent::State PlayerPhysicsComponent::getState() const{
   return m_state;
+}
+
+/**
+   Sets the default gravity
+ */
+void PlayerPhysicsComponent::setGravity(int gravity){
+  m_gravity = gravity;
 }

@@ -33,6 +33,7 @@ bool ArenaPlayState::onLoad(){
   // create player
   m_pPlayer = makePlayer(m_windowID, m_pControlScheme.get());
   m_pPlayer->setAcceleration(Vector(0.0, GRAVITY));
+  dynamic_cast<PlayerPhysicsComponent*>(m_pPlayer->getPhysicsComponent().get())->setGravity(GRAVITY);
 
   auto spawnPoints = m_platformerMap.getSpawnPoints();
   if(spawnPoints.size() > 0){
@@ -66,7 +67,9 @@ void ArenaPlayState::render(){
     auto physicsComponent = m_pPlayer->getPhysicsComponent();
     PlayerPhysicsComponent::State state = dynamic_cast<PlayerPhysicsComponent*>(physicsComponent.get())->getState();
     float fps = CapEngine::Locator::videoManager->getFPS();
-    DiagnosticData diagData= {fps, state};
+    CapEngine::Vector position = m_pPlayer->getPosition();
+    CapEngine::Vector velocity = m_pPlayer->getVelocity();
+    DiagnosticData diagData= {fps, state, position, velocity};
     int xStart = 0;
     int yStart = 0;
     string font = "res/fonts/tahoma.ttf";

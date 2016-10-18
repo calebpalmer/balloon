@@ -12,6 +12,9 @@
 struct DiagnosticData {
   float fps;
   PlayerPhysicsComponent::State m_state;
+  CapEngine::Vector position;
+  CapEngine::Vector velocity;
+  CapEngine::Vector acceleration;
 };
 
 class Diagnostics {
