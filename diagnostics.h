@@ -2,6 +2,7 @@
 #define DIAGNOSTICS_H
 
 #include <string>
+#include <vector>
 
 #include "CapEngine.h"
 
@@ -29,5 +30,6 @@ class Diagnostics {
   static CapEngine::Texture* getTexture(CapEngine::Surface* surface);
   static CapEngine::Texture* getVectorTexture(CapEngine::Vector vector, std::string label,
 					      std::string font, int fontSize);
+  static void drawTextures(std::vector<CapEngine::Texture*> textures, Uint32 windowID, int x, int y, int padding);
 };
 #endif // DIAGNOSTICS_H
