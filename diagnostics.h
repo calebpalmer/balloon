@@ -26,5 +26,8 @@ class Diagnostics {
   static CapEngine::Surface* getStateSurface(PlayerPhysicsComponent::State state,
 					     std::string font, int fontSize);
   static CapEngine::Surface* getSurface(std::string value, std::string font, int fontSize);
+  static CapEngine::Texture* getTexture(CapEngine::Surface* surface);
+  static CapEngine::Texture* getVectorTexture(CapEngine::Vector vector, std::string label,
+					      std::string font, int fontSize);
 };
 #endif // DIAGNOSTICS_H

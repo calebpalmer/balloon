@@ -26,31 +26,19 @@ void Diagnostics::display(Uint32 windowID, DiagnosticData data, double x, double
   CapEngine::Locator::videoManager->closeTexture(stateTexture);
 
   // draw position
-  std::string positionStr = (data.position).toString();
-  std::stringstream positionStream;
-  positionStream << "Position: " << positionStr;
-  CapEngine::Surface* positionSurface = getSurface(positionStream.str(), font, fontSize);
-  CapEngine::Texture* positionTexture = CapEngine::Locator::videoManager->createTextureFromSurface(positionSurface, true);
+  CapEngine::Texture* positionTexture = getVectorTexture(data.position, "Position: ", font, fontSize);
   newY = y + 2 * (textureHeight + PADDING);
   CapEngine::Locator::videoManager->drawTexture(windowID, x, newY, positionTexture);
   CapEngine::Locator::videoManager->closeTexture(positionTexture);
 
-    // draw velocity
-  std::string velocityStr = (data.velocity).toString();
-  std::stringstream velocityStream;
-  velocityStream << "Velocity: " << velocityStr;
-  CapEngine::Surface* velocitySurface = getSurface(velocityStream.str(), font, fontSize);
-  CapEngine::Texture* velocityTexture = CapEngine::Locator::videoManager->createTextureFromSurface(velocitySurface, true);
+  // draw velocity
+  CapEngine::Texture* velocityTexture = getVectorTexture(data.position, "Velocity: ", font, fontSize);
   newY = y + 3 * (textureHeight + PADDING);
   CapEngine::Locator::videoManager->drawTexture(windowID, x, newY, velocityTexture);
   CapEngine::Locator::videoManager->closeTexture(velocityTexture);
 
   // draw acceleration
-  std::string accelerationStr = (data.acceleration).toString();
-  std::stringstream accelerationStream;
-  accelerationStream << "Acceleration: " << accelerationStr;
-  CapEngine::Surface* accelerationSurface = getSurface(accelerationStream.str(), font, fontSize);
-  CapEngine::Texture* accelerationTexture = CapEngine::Locator::videoManager->createTextureFromSurface(accelerationSurface, true);
+  CapEngine::Texture* accelerationTexture = getVectorTexture(data.position, "Acceleration: ", font, fontSize);
   newY = y + 4 * (textureHeight + PADDING);
   CapEngine::Locator::videoManager->drawTexture(windowID, x, newY, accelerationTexture);
   CapEngine::Locator::videoManager->closeTexture(accelerationTexture);
@@ -90,4 +78,25 @@ CapEngine::Surface* Diagnostics::getSurface(std::string value, std::string font,
   CapEngine::Surface* surface = fontManager.getTextSurface(font, value, fontSize,
 							   0x00, 0x00, 0x00);
   return surface;
+}
+
+/**
+   returns Texture for given Surface.  Frees the Surface.
+ */
+CapEngine::Texture* getTexture(CapEngine::Surface* surface){
+  CapEngine::Texture* texture = CapEngine::Locator::videoManager->createTextureFromSurface(surface, true);
+  return texture;
+}
+
+/**
+
+   Create Texture for Vector Diagnostics
+ */
+CapEngine::Texture* Diagnostics::getVectorTexture(CapEngine::Vector vector, std::string label, std::string font, int fontSize){
+  std::string vectorText = vector.toString();
+  std::stringstream textStream;
+  textStream << label << vectorText;
+  CapEngine::Surface* surface = getSurface(textStream.str(), font, fontSize);
+  CapEngine::Texture* texture = CapEngine::Locator::videoManager->createTextureFromSurface(surface, true);
+  return texture;
 }
