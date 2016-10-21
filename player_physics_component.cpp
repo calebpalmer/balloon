@@ -89,6 +89,10 @@ bool PlayerPhysicsComponent::handleCollision(GameObject* object, CollisionType c
       m_state = State::NEUTRAL;
     }
 
+    Vector currentVelocity = object->getVelocity();
+    currentVelocity.setY(0.0);
+    object->setVelocity(currentVelocity);
+    
     // remove horizontal acceleration from mid-air turns
     m_doAirRightTurn = false;
     m_doAirLeftTurn = false;
