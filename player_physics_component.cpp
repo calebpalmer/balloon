@@ -116,13 +116,13 @@ void PlayerPhysicsComponent::receive(GameObject* object, int messageId, string m
     
     // apply x velocity change if doing turn with jump
     // In air right turn
-    if(m_doAirRightTurn && velocity.getX() <= 0.0){
-      double newHorizontalVelocity = (-1) * JUMP_HORIZONTAL_VELOCITY;
+    if(m_doAirRightTurn){
+      double newHorizontalVelocity = JUMP_HORIZONTAL_VELOCITY;
       velocity.setX(newHorizontalVelocity);
     }
     // In air left turn
-    if(m_doAirLeftTurn && velocity.getX() >= 0.0){
-      double newHorizontalVelocity = JUMP_HORIZONTAL_VELOCITY;
+    if(m_doAirLeftTurn){
+      double newHorizontalVelocity = (-1) * JUMP_HORIZONTAL_VELOCITY;
       velocity.setX(newHorizontalVelocity);
     }
 
@@ -143,14 +143,9 @@ void PlayerPhysicsComponent::receive(GameObject* object, int messageId, string m
     }
     // If we ARE airborn, apply an acceleration to the turning
     else{
-      // check if we need to do a full turn on a jump
       // set a flag to be checked on next JUMP message
-      if(velocity.getX() <= 0.0){
-	m_doAirRightTurn = true;
-      }
-      else{
-	m_doAirRightTurn = false;
-      }
+      m_doAirRightTurn = true;
+
       // You can turn a bit without doing an in air jump
       if(velocity.getY() <= 0.0){
 	Vector acceleration = object->getAcceleration();
@@ -171,14 +166,9 @@ void PlayerPhysicsComponent::receive(GameObject* object, int messageId, string m
     }
     // if AIRBORN
     else{
-      // check if we need to do a full turn on a jump      
       // set a flag to be checked on next JUMP message
-      if(velocity.getX() >= 0.0){
-	m_doAirLeftTurn = true;
-      }
-      else{
-	m_doAirLeftTurn = false;
-      }
+      m_doAirLeftTurn = true;
+	
       // You can turn a bit without doing an in air jump
       if(velocity.getY() >= 0.0){
 	Vector acceleration = object->getAcceleration();
