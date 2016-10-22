@@ -111,30 +111,83 @@ bool PlayerPhysicsComponent::handleCollision(GameObject* object, CollisionType c
 
 void PlayerPhysicsComponent::receive(GameObject* object, int messageId, string message){
   if(message == "JUMP"){
-    Vector velocity = object->getVelocity();
-
-    // set vertical velocity
-    velocity.setY(JUMP_VELOCITY);
-    
-    // apply x velocity change if doing turn with jump
-    // In air right turn
-    if(m_doAirRightTurn){
-      double newHorizontalVelocity = JUMP_HORIZONTAL_VELOCITY;
-      velocity.setX(newHorizontalVelocity);
-    }
-    // In air left turn
-    if(m_doAirLeftTurn){
-      double newHorizontalVelocity = (-1) * JUMP_HORIZONTAL_VELOCITY;
-      velocity.setX(newHorizontalVelocity);
-    }
-
-    // set the new velocity
-    object->setVelocity(velocity);
-
-    m_state = State::AIRBORN;
+    handleJumpMessage(object);
   }
   
   else if(message == "RIGHT"){
+    handleRightMessage(object);
+  }
+
+  else if(message == "LEFT"){
+    handleLeftMessage(object);
+  }
+
+    else if (message == "STOPLEFT" || message == "STOPRIGHT"){
+      handleStopLeftRightMessage(object);
+    }
+
+    else if (message == "LEFT BOUNDARY COLLISION"){
+      handleHorizontalBoundaryCollisionMessage(object, CapEngine::COLLISION_LEFT);
+    }
+
+    else if (message == "RIGHT BOUNDARY COLLISION"){
+      handleHorizontalBoundaryCollisionMessage(object, CapEngine::COLLISION_RIGHT);
+    }
+
+    else if (message == "TOP BOUNDARY COLLISION"){
+      handleTopBoundaryCollisionMessage(object);
+    }
+
+  else{
+    // nothing
+  }
+}
+
+/**
+   Accessor function for current state
+ */
+PlayerPhysicsComponent::State PlayerPhysicsComponent::getState() const{
+  return m_state;
+}
+
+/**
+   Sets the default gravity
+ */
+void PlayerPhysicsComponent::setGravity(int gravity){
+  m_gravity = gravity;
+}
+
+/**
+   Handle "JUMP" messages
+ */
+void PlayerPhysicsComponent::handleJumpMessage(GameObject* object){
+  Vector velocity = object->getVelocity();
+
+  // set vertical velocity
+  velocity.setY(JUMP_VELOCITY);
+    
+  // apply x velocity change if doing turn with jump
+  // In air right turn
+  if(m_doAirRightTurn){
+    double newHorizontalVelocity = JUMP_HORIZONTAL_VELOCITY;
+    velocity.setX(newHorizontalVelocity);
+  }
+  // In air left turn
+  if(m_doAirLeftTurn){
+    double newHorizontalVelocity = (-1) * JUMP_HORIZONTAL_VELOCITY;
+    velocity.setX(newHorizontalVelocity);
+  }
+
+  // set the new velocity
+  object->setVelocity(velocity);
+
+  m_state = State::AIRBORN;
+}
+
+/**
+   handle "RIGHT" messages
+ */
+void PlayerPhysicsComponent::handleRightMessage(GameObject* object){
     Vector velocity = object->getVelocity();
     // If not airborn, then we can run and turn at normal velocity
     if(m_state != State::AIRBORN){
@@ -155,81 +208,88 @@ void PlayerPhysicsComponent::receive(GameObject* object, int messageId, string m
 	object->setAcceleration(acceleration);
       }
     }
-  }
+}
 
-  else if(message == "LEFT"){
-    Vector velocity = object->getVelocity();
-    // If not airborn, then we can run and turn at normal velocity
-    if(m_state != State::AIRBORN){
-      m_doRun = true;
-      velocity.setX(-RUN_VELOCITY);
-      m_state = State::RUNNING;
-      object->setVelocity(velocity);
-    }
-    // if AIRBORN
-    else{
-      // set a flag to be checked on next JUMP message
-      m_doAirLeftTurn = true;
+/**
+   handle "LEFT" messages
+ */
+void PlayerPhysicsComponent::handleLeftMessage(GameObject* object){
+  Vector velocity = object->getVelocity();
+  // If not airborn, then we can run and turn at normal velocity
+  if(m_state != State::AIRBORN){
+    m_doRun = true;
+    velocity.setX(-RUN_VELOCITY);
+    m_state = State::RUNNING;
+    object->setVelocity(velocity);
+  }
+  // if AIRBORN
+  else{
+    // set a flag to be checked on next JUMP message
+    m_doAirLeftTurn = true;
 	
-      // You can turn a bit without doing an in air jump
-      if(velocity.getY() >= 0.0){
-	Vector acceleration = object->getAcceleration();
-	acceleration.setX(-JUMP_TURN_ACCELERATION);
-	object->setAcceleration(acceleration);
-      }
+    // You can turn a bit without doing an in air jump
+    if(velocity.getY() >= 0.0){
+      Vector acceleration = object->getAcceleration();
+      acceleration.setX(-JUMP_TURN_ACCELERATION);
+      object->setAcceleration(acceleration);
     }
   }
+}
 
-    else if (message == "STOPLEFT" || message == "STOPRIGHT"){
-      m_doRun = false;
-      m_doAirRightTurn = false;
-      m_doAirLeftTurn = false;
-      Vector velocity = object->getVelocity();
-      // on ground
-      if(m_state != State::AIRBORN){
-	velocity.setX(0.0);
-	object->setVelocity(velocity);
-	m_state = State::NEUTRAL;
-      }
-      // in air
-      else{
-	// turn off in air turn acceleration
-	Vector acceleration = object->getAcceleration();
-	acceleration.setX(0.0);
-	object->setAcceleration(acceleration);
+/**
+   handle "STOPLEFT" and "STOPRIGHT" messages
+ */
+void PlayerPhysicsComponent::handleStopLeftRightMessage(GameObject* object){
+  m_doRun = false;
+  m_doAirRightTurn = false;
+  m_doAirLeftTurn = false;
+  Vector velocity = object->getVelocity();
+  // on ground
+  if(m_state != State::AIRBORN){
+    velocity.setX(0.0);
+    object->setVelocity(velocity);
+    m_state = State::NEUTRAL;
+  }
+  // in air
+  else{
+    // turn off in air turn acceleration
+    Vector acceleration = object->getAcceleration();
+    acceleration.setX(0.0);
+    object->setAcceleration(acceleration);
 
-	// turn off in air jump flag
-	m_doAirRightTurn = false;
-	m_doAirLeftTurn = false;
-      }
-    }
+    // turn off in air jump flag
+    m_doAirRightTurn = false;
+    m_doAirLeftTurn = false;
+  }
+}
 
-    else if (message == "LEFT BOUNDARY COLLISION"){
-      CapEngine::Vector currentPosition = object->getPosition();
-      CapEngine::real currentX = currentPosition.getX();
-      currentPosition.setX(currentX + 1);
-      object->setPosition(currentPosition);
+/**
+   Handle "LEFT BOUNDARY COLLISION" and "RIGHT BOUNDARY COLLISION" messages
+ */
+void PlayerPhysicsComponent::handleHorizontalBoundaryCollisionMessage(GameObject* object, CollisionType collisionType){
+  CapEngine::Vector currentPosition = object->getPosition();
+  CapEngine::real currentX = currentPosition.getX();
+  if(collisionType == COLLISION_LEFT){
+    currentPosition.setX(currentX + 1);
+  }
+  else if(collisionType == COLLISION_RIGHT){
+    currentPosition.setX(currentX - 1);
+  }
+  else{
+    // do nothing
+  }
+  object->setPosition(currentPosition);
 
-      // update X velocity to 0
-      CapEngine::Vector velocity = object->getVelocity();
-      velocity.setX(0.0);
-      object->setVelocity(velocity);
-    }
+  // update X velocity to 0
+  CapEngine::Vector velocity = object->getVelocity();
+  velocity.setX(0.0);
+  object->setVelocity(velocity);
+}
 
-    else if (message == "RIGHT BOUNDARY COLLISION"){
-      CapEngine::Vector currentPosition = object->getPosition();
-      CapEngine::real currentX = currentPosition.getX();
-      currentPosition.setX(currentX - 1);
-      object->setPosition(currentPosition);
-
-      // update X velocity to 0
-      CapEngine::Vector velocity = object->getVelocity();
-      velocity.setX(0.0);
-      object->setVelocity(velocity);
-
-    }
-
-    else if (message == "TOP BOUNDARY COLLISION"){
+/**
+   handle "TOP BOUNDARY COLLISION" messages
+ */
+void PlayerPhysicsComponent::handleTopBoundaryCollisionMessage(GameObject* object){
       CapEngine::Vector currentPosition = object->getPosition();
       CapEngine::real currentY = currentPosition.getY();
       currentPosition.setY(currentY + 1);
@@ -239,23 +299,4 @@ void PlayerPhysicsComponent::receive(GameObject* object, int messageId, string m
       CapEngine::Vector velocity = object->getVelocity();
       velocity.setY(0.0);
       object->setVelocity(velocity);
-    }
-
-  else{
-    // nothing
-  }
-}
-
-/**
-   Accessor function for current state
- */
-PlayerPhysicsComponent::State PlayerPhysicsComponent::getState() const{
-  return m_state;
-}
-
-/**
-   Sets the default gravity
- */
-void PlayerPhysicsComponent::setGravity(int gravity){
-  m_gravity = gravity;
 }

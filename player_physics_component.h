@@ -25,6 +25,13 @@ class PlayerPhysicsComponent : public CapEngine::PhysicsComponent {
   void setGravity(int gravity);
 
  private:
+  void handleJumpMessage(CapEngine::GameObject* object);
+  void handleRightMessage(CapEngine::GameObject* object);
+  void handleLeftMessage(CapEngine::GameObject* object);
+  void handleStopLeftRightMessage(CapEngine::GameObject* object);
+  void handleHorizontalBoundaryCollisionMessage(CapEngine::GameObject* object, CapEngine::CollisionType collisionType);
+  void handleTopBoundaryCollisionMessage(CapEngine::GameObject* object);
+  
   const int JUMP_VELOCITY = -200;
   const int JUMP_TURN_ACCELERATION = 300;
   const int JUMP_HORIZONTAL_VELOCITY = 200;
