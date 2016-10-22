@@ -92,11 +92,11 @@ void ArenaPlayState::update(double ms){
 				    m_pPlayer.get(), collision.collisionPoint);
   }
 
-  m_pPlayer = std::move(pUpdatedPlayer);
+  // check for boundary collisions
+  CapEngine::Rectangle arenaMBR = {0, 0, 1200, 800};
+  this->handleBoundaryCollisions(pUpdatedPlayer.get(), arenaMBR);
 
-  // auto mbr = m_pPlayer->boundingPolygon();
-  // cout << "player position " << mbr.x << ", " << mbr.y
-  //      << "@ " << mbr.width << " x " << mbr.height << endl;
+  m_pPlayer = std::move(pUpdatedPlayer);
 
   // check events
   if(m_startButtonPressed){
@@ -187,4 +187,30 @@ void ArenaPlayState::receiveInput(std::string input) {
     m_showDiagnostics = !m_showDiagnostics;
   }
 
+}
+/**
+   check if player is colliding with outer edges of screen and handle it
+ */
+void ArenaPlayState::handleBoundaryCollisions(CapEngine::GameObject* pPlayerObject,
+					      CapEngine::Rectangle boundary){
+  CollisionType collisionType = CapEngine::detectMBRCollisionInterior(pPlayerObject->boundingPolygon(), boundary);
+  while(collisionType != COLLISION_NONE){
+    switch(collisionType){
+    case COLLISION_LEFT:
+      pPlayerObject->send(-1, "LEFT BOUNDARY COLLISION");
+      break;
+    case COLLISION_RIGHT:
+      pPlayerObject->send(-1, "RIGHT BOUNDARY COLLISION");
+      break;
+    case COLLISION_TOP:
+      pPlayerObject->send(-1, "TOP BOUNDARY COLLISION");
+      break;
+    case COLLISION_BOTTOM:
+      break;
+    default:
+      break;
+    }
+    // check to make sure there are no more collisions
+    collisionType = CapEngine::detectMBRCollisionInterior(pPlayerObject->boundingPolygon(), boundary);
+  }
 }

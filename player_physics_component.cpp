@@ -47,10 +47,12 @@ void PlayerPhysicsComponent::update(GameObject* object, double timestep){
 
   object->setVelocity(newVelocity);
 
-
+  // Save old position
+  object->setPreviousPosition(object->getPosition());
+  
   //  Calculate new position
   Vector newPosition = CapEngine::applyDisplacement(object->getVelocity(), object->getPosition(), timestep);
-  object->setPosition(newPosition);
+    object->setPosition(newPosition);
 
   // Reset acceleration to gravity in case of ground collision removing it
   acceleration = object->getAcceleration();
@@ -202,11 +204,45 @@ void PlayerPhysicsComponent::receive(GameObject* object, int messageId, string m
       }
     }
 
+    else if (message == "LEFT BOUNDARY COLLISION"){
+      CapEngine::Vector currentPosition = object->getPosition();
+      CapEngine::real currentX = currentPosition.getX();
+      currentPosition.setX(currentX + 1);
+      object->setPosition(currentPosition);
+
+      // update X velocity to 0
+      CapEngine::Vector velocity = object->getVelocity();
+      velocity.setX(0.0);
+      object->setVelocity(velocity);
+    }
+
+    else if (message == "RIGHT BOUNDARY COLLISION"){
+      CapEngine::Vector currentPosition = object->getPosition();
+      CapEngine::real currentX = currentPosition.getX();
+      currentPosition.setX(currentX - 1);
+      object->setPosition(currentPosition);
+
+      // update X velocity to 0
+      CapEngine::Vector velocity = object->getVelocity();
+      velocity.setX(0.0);
+      object->setVelocity(velocity);
+
+    }
+
+    else if (message == "TOP BOUNDARY COLLISION"){
+      CapEngine::Vector currentPosition = object->getPosition();
+      CapEngine::real currentY = currentPosition.getY();
+      currentPosition.setY(currentY + 1);
+      object->setPosition(currentPosition);
+
+      // update Y velocity to 0
+      CapEngine::Vector velocity = object->getVelocity();
+      velocity.setY(0.0);
+      object->setVelocity(velocity);
+    }
+
   else{
-    // if(m_state != State::AIRBORN){
-    //   m_state == State::NEUTRAL;
-    // }
-    // do nothing
+    // nothing
   }
 }
 

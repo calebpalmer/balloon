@@ -18,6 +18,7 @@ class ArenaPlayState : public CapEngine::GameState, public CapEngine::IEventSubs
 
  private:
   CapEngine::PlatformerMap buildPlatformerMap(std::string arenaConfigPath, int arenaID);
+  void handleBoundaryCollisions(CapEngine::GameObject* pPlayer, CapEngine::Rectangle boundary);
 
   const int GRAVITY = 300;
   
