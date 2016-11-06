@@ -4,6 +4,9 @@
     <!-- Menu -->
     <texture id="1000">res/textures/logo.png</texture>
 
+    <!-- Sprites -->>
+    <texture id="1050" frameWidth="40" frameHeight="60">res/textures/player.png</texture>
+
     <!-- Arenas -->
     <texture id="2000">res/textures/basic_arena.png</texture>
     <texture id="2001">res/textures/basic_arena_collisionmap.png</texture>
