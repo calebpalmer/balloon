@@ -39,12 +39,6 @@ class KeyboardControlScheme : public ControlScheme,  public CapEngine::IEventSub
   KeyboardControlScheme();
   KeyboardControlScheme(std::vector<std::pair<KeyInput, std::string> > map);
   
-  // ControlScheme
-  virtual void listen(ControlSchemeListener* pListener) override;
-  virtual void unlisten(ControlSchemeListener* pListener) override;
-  virtual void enable() override;
-  virtual void disable() override;
-
   // IEventSubscriber
   virtual void receiveEvent(SDL_Event event, CapEngine::Time* time) override;
 
@@ -52,9 +46,7 @@ class KeyboardControlScheme : public ControlScheme,  public CapEngine::IEventSub
   void loadMap(std::vector<KeyInput, std::string>);
   
  private:
-  bool m_enabled;
   static std::vector<std::pair<KeyInput, std::string> > s_defaultMap;
-  std::vector<ControlSchemeListener*> m_pListeners;
   std::vector<std::pair<KeyInput, std::string> > m_keyMap;
 
   // disable copy constructor and assignment operator

@@ -2,6 +2,7 @@
 #define CONTROL_SCHEME_H
 
 #include <memory>
+#include <vector>
 
   // forward declaration
   class ControlSchemeListener;
@@ -14,10 +15,14 @@
 class ControlScheme {
  public:  
   virtual ~ControlScheme() {}
-  virtual void listen(ControlSchemeListener* pListener) = 0;
-  virtual void unlisten(ControlSchemeListener* pListener) = 0;
-  virtual void disable() = 0;
-  virtual void enable() = 0;
+  virtual void listen(ControlSchemeListener* pListener);
+  virtual void unlisten(ControlSchemeListener* pListener) ;
+  virtual void disable();
+  virtual void enable();
+
+ protected:
+  bool m_enabled;
+  std::vector<ControlSchemeListener*> m_pListeners;
 };
 
 #endif // KEYBOARD_CONTROL_SCHEME
