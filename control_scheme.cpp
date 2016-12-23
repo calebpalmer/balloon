@@ -1,5 +1,9 @@
 #include "control_scheme.h"
 
+#include "control_scheme_listener.h"
+
+using namespace std;
+
 /**
    Registers listeners for Input events
  */
@@ -42,4 +46,10 @@ void ControlScheme::enable(){
  */ 
 void ControlScheme::disable(){
   m_enabled = false;
+}
+
+void ControlScheme::dispatchMessage(string message){
+  for (auto & listener : m_pListeners){
+    listener->receiveInput(message);
+  }
 }

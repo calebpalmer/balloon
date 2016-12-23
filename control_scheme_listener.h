@@ -12,18 +12,8 @@
  */
 class ControlSchemeListener {
  public:
-  /**
-     Receives a message from a ControlScheme
-     @param input The message received.
-   */
   virtual void receiveInput(std::string input) = 0;
-
-  /**
-     Registers itself to listen for messages from the give ControlScheme
-     #param pControlScheme the ControlScheme to listen to.
-   */
   virtual void subscribe(ControlScheme* pControlScheme);
-  
   virtual ~ControlSchemeListener();
 
  private:
