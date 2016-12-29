@@ -10,6 +10,7 @@
 #include "player.h"
 #include "pausestate.h"
 #include "keyboard_control_scheme.h"
+#include "gamepad_control_scheme.h"
 #include "player_physics_component.h"
 #include "diagnostics.h"
 
@@ -25,8 +26,19 @@ ArenaPlayState::ArenaPlayState(Uint32 windowID, int arenaID) :
    This gets run when the GameState is first loaded for use.
  */
 bool ArenaPlayState::onLoad(){
-  // create control scheme using default map (default constructor)
-  m_pControlScheme.reset(new KeyboardControlScheme());
+  // If there is a gamepad connected, setup gamepad control scheme
+  auto controllers = Controller::getConnectedControllers();
+  if( controllers.size() > 0 ){
+    shared_ptr<Controller> pController = controllers[0];
+    // auto pGamePadControlScheme = std::make_shared<ControlScheme>( new GamePadControlScheme( pController ) );
+    // m_pControlScheme.reset( pGamePadControlScheme.release() );
+    m_pControlScheme.reset( new GamePadControlScheme( pController ) );
+  }
+  // if no gamepad, use keyboard
+  else{
+    // create control scheme using default map (default constructor)
+    m_pControlScheme.reset(new KeyboardControlScheme());
+  }
   ControlSchemeListener::subscribe(m_pControlScheme.get());
   m_pControlScheme->enable();
   
@@ -45,9 +57,11 @@ bool ArenaPlayState::onLoad(){
   else{
     m_pPlayer->setPosition(Vector(60, 400));
   }
-  
+
+  // subscribe to events
   Locator::eventDispatcher->subscribe(this, CapEngine::keyboardEvent | CapEngine::controllerEvent);
   return true;
+
 }
 
 /**
@@ -171,13 +185,9 @@ PlatformerMap ArenaPlayState::buildPlatformerMap(string arenaConfigPath, int are
 
 
 void ArenaPlayState::receiveEvent(const SDL_Event event, CapEngine::Time* time){
-  // if(event.type == SDL_CONTROLLERBUTTONUP){
-  //   const SDL_ControllerButtonEvent* controllerEvent = reinterpret_cast<const SDL_ControllerButtonEvent*>(&event);
-  //   SDL_GameControllerButton button = static_cast<SDL_GameControllerButton>(controllerEvent->button);
-  //   if(button == SDL_CONTROLLER_BUTTON_START){
-  //     m_startButtonPressed = true;
-  //   }
-  // }
+  // check for controller added or controller removed events
+  // if controller added, create controlscheme for it, and start using it
+  // if controller removed, remove the control schems for it, and revert back to keyboard control scheme
 }
 
 

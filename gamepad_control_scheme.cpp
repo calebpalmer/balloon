@@ -18,6 +18,8 @@ GamePadControlScheme::GamePadControlScheme(shared_ptr<Controller> pController)
   : m_pController(pController)  {
 
   m_inputMap = getDefaultButtonMap();
+  int subscriptionMask = controllerEvent;
+  IEventSubscriber::subscribe( Locator::eventDispatcher, subscriptionMask );
 }
 
 
@@ -64,10 +66,9 @@ bool GamePadControlScheme::isButtonInputInScheme(GamePadButtonInput input, std::
       message = trackedInputMessagePair.second;
       return true;
     }
-
-    // wasn't found so return false
-    return false;
   }
+  // wasn't found so return false
+  return false;
 }
 
 
