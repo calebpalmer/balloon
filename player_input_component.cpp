@@ -53,23 +53,7 @@ void PlayerInputComponent::receiveInput(string  input){
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+void PlayerInputComponent::setControlScheme(ControlScheme* pControlScheme){
+  this->unsubscribeAll();  
+  this->subscribe(pControlScheme);
+}

@@ -42,6 +42,8 @@ class GamePadControlScheme : public ControlScheme, public CapEngine::IEventSubsc
 
   std::vector<std::pair<GamePadButtonInput, std::string> > getDefaultButtonMap() const;
   void changeButtonMap( std::vector<std::pair<GamePadButtonInput, std::string> > buttonMap);
+  std::shared_ptr<CapEngine::Controller> getController();
+  int getControllerID() const;
 
  private:
   std::shared_ptr<CapEngine::Controller> m_pController;  // The Game Controller the scheme is attached to

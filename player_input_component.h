@@ -17,15 +17,12 @@ class PlayerInputComponent : public CapEngine::InputComponent, public ControlSch
   ~PlayerInputComponent();
   void update(CapEngine::GameObject* object) override;
   void receiveInput(std::string input) override;
+  void setControlScheme(ControlScheme* pControlScheme);
 
  protected:
   std::queue<std::string> m_inputs;
 };
 
 #endif // PLAYER_INPUT_CONTROLLER_H
-
-
-
-
 
 

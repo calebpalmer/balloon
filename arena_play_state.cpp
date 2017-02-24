@@ -6,13 +6,16 @@
 #include <sstream>
 #include <iomanip>
 #include <iostream>
+#include <memory>
 
 #include "player.h"
 #include "pausestate.h"
+#include "player_input_component.h"
 #include "keyboard_control_scheme.h"
 #include "gamepad_control_scheme.h"
 #include "player_physics_component.h"
 #include "diagnostics.h"
+#include "assets.h"
 
 using namespace CapEngine;
 using namespace std;
@@ -24,7 +27,7 @@ ArenaPlayState::ArenaPlayState(Uint32 windowID, int arenaID) :
 
 /**
    This gets run when the GameState is first loaded for use.
- */
+*/
 bool ArenaPlayState::onLoad(){
   // If there is a gamepad connected, setup gamepad control scheme
   auto controllers = Controller::getConnectedControllers();
@@ -41,7 +44,7 @@ bool ArenaPlayState::onLoad(){
   }
   ControlSchemeListener::subscribe(m_pControlScheme.get());
   m_pControlScheme->enable();
-  
+
   // create player
   m_pPlayer = makePlayer(m_windowID, m_pControlScheme.get());
   m_pPlayer->setAcceleration(Vector(0.0, GRAVITY));
@@ -66,7 +69,7 @@ bool ArenaPlayState::onLoad(){
 
 /**
    This is run with the GameState is being removed
- */
+*/
 bool ArenaPlayState::onDestroy(){
   Locator::eventDispatcher->unsubscribe(this);
   return true;
@@ -75,6 +78,11 @@ bool ArenaPlayState::onDestroy(){
 void ArenaPlayState::render(){
   m_platformerMap.render();
   m_pPlayer->render();
+
+  // render animations
+  for(auto && animation : m_animations){
+    animation->render();
+  }
 
   if(m_showDiagnostics){
     // gather diagnostic info for display
@@ -112,6 +120,18 @@ void ArenaPlayState::update(double ms){
 
   m_pPlayer = std::move(pUpdatedPlayer);
 
+  // update animations
+  auto animationIter= m_animations.begin();
+  while(animationIter != m_animations.end()){
+    (*animationIter)->update(ms);
+    if((*animationIter)->isDone()){
+      animationIter = m_animations.erase(animationIter);
+    }
+    else{
+      animationIter++;
+    }
+  }
+  
   // check events
   if(m_startButtonPressed){
     unique_ptr<GameState> pPauseState(new PauseState(m_windowID));
@@ -125,7 +145,7 @@ void ArenaPlayState::update(double ms){
 PlatformerMap ArenaPlayState::buildPlatformerMap(string arenaConfigPath, int arenaID){
   // open config files
   XmlParser xmlParser(arenaConfigPath);
-    
+
   // find arena
   stringstream xpathExpression;
   xpathExpression <<  "/arenas/arena[@id=" << arenaID << "]";
@@ -152,16 +172,16 @@ PlatformerMap ArenaPlayState::buildPlatformerMap(string arenaConfigPath, int are
     else if(xmlParser.nodeNameCompare(i, "spawn_points")){
       auto spawnPoints = xmlParser.getNodeChildren(i);
       for(auto& spawnPoint : spawnPoints){
-	if(xmlParser.nodeNameCompare(spawnPoint, "spawn_point")){
-	  try{
-	    int x = atoi((xmlParser.getAttribute(spawnPoint, "x")).c_str());
-	    int y = atoi((xmlParser.getAttribute(spawnPoint, "y")).c_str());
-	    arenaSpawnPoints.push_back(Vector(x, y));
-	  }
-	  catch(exception& e){
-	    Locator::logger->log(e.what(), Logger::CWARNING);
-	  }
-	}
+        if(xmlParser.nodeNameCompare(spawnPoint, "spawn_point")){
+          try{
+            int x = atoi((xmlParser.getAttribute(spawnPoint, "x")).c_str());
+            int y = atoi((xmlParser.getAttribute(spawnPoint, "y")).c_str());
+            arenaSpawnPoints.push_back(Vector(x, y));
+          }
+          catch(exception& e){
+            Locator::logger->log(e.what(), Logger::CWARNING);
+          }
+        }
       }
     }
   }
@@ -178,16 +198,14 @@ PlatformerMap ArenaPlayState::buildPlatformerMap(string arenaConfigPath, int are
   for(auto& spawnPoint : arenaSpawnPoints){
     platformerMap.addSpawnPoint(spawnPoint);
   }
- 
+
   return platformerMap;
 
 }
 
 
 void ArenaPlayState::receiveEvent(const SDL_Event event, CapEngine::Time* time){
-  // check for controller added or controller removed events
-  // if controller added, create controlscheme for it, and start using it
-  // if controller removed, remove the control schems for it, and revert back to keyboard control scheme
+  checkControllerConnectionEvents(event);
 }
 
 
@@ -200,7 +218,7 @@ void ArenaPlayState::receiveInput(std::string input) {
 }
 /**
    check if player is colliding with outer edges of screen and handle it
- */
+*/
 void ArenaPlayState::handleBoundaryCollisions(CapEngine::GameObject* pPlayerObject,
 					      CapEngine::Rectangle boundary){
   CollisionType collisionType = CapEngine::detectMBRCollisionInterior(pPlayerObject->boundingPolygon(), boundary);
@@ -223,4 +241,78 @@ void ArenaPlayState::handleBoundaryCollisions(CapEngine::GameObject* pPlayerObje
     // check to make sure there are no more collisions
     collisionType = CapEngine::detectMBRCollisionInterior(pPlayerObject->boundingPolygon(), boundary);
   }
+}
+
+void ArenaPlayState::checkControllerConnectionEvents(const SDL_Event event){
+  // check for controller added or controller removed events
+  // if controller added, create controlscheme for it, and start using it
+  if( event.type == SDL_CONTROLLERDEVICEADDED ){
+    const SDL_ControllerDeviceEvent *controllerDeviceEvent = reinterpret_cast< const SDL_ControllerDeviceEvent* >( &event );
+    Locator::logger->log("Controller detected", Logger::CDEBUG);
+
+    Sint32 joystickDeviceIndex = controllerDeviceEvent->which;
+
+    // check to make sure that we are using a keyboard control schema
+    KeyboardControlScheme *pKeyboardControlScheme = dynamic_cast< KeyboardControlScheme* >( m_pControlScheme.get() );
+    if(  pKeyboardControlScheme != nullptr ){
+      // is this the same controller being used
+      for( auto && controller : Controller::getConnectedControllers() ){
+        if( controller->getIndex() == joystickDeviceIndex ){
+
+          auto pControlScheme = std::make_shared<GamePadControlScheme>(controller);
+          setControlScheme(pControlScheme);          
+          
+          // add animation
+          int x = 20;
+          int y = 20;
+          int width = 100;
+          int height = 71;
+          int repeatCount = 5;
+          double intervalMS = 1000;
+          std::unique_ptr<Animation> controllerAddedAnimation(new FlashingAnimation(m_windowID, ASSET_CONTROLLER_ANIMATION, width, height, x, y,
+										    repeatCount, intervalMS));
+          m_animations.push_back(std::move(controllerAddedAnimation));
+
+          Locator::logger->log("Controller added", Logger::CDEBUG);
+        }
+      }
+    }
+  }
+
+  // if controller removed, remove the control schems for it, and revert back to keyboard control scheme
+  else if( event.type == SDL_CONTROLLERDEVICEREMOVED ){
+    const SDL_ControllerDeviceEvent *controllerDeviceEvent = reinterpret_cast< const SDL_ControllerDeviceEvent* >( &event );
+    Sint32 joystickDeviceIndex = controllerDeviceEvent->which;
+
+    // check to make sure that we are using a game controller
+    GamePadControlScheme *pGamePadControlScheme = dynamic_cast< GamePadControlScheme* >( m_pControlScheme.get() );
+    if(  pGamePadControlScheme != nullptr ){
+      // is this the same controller being used
+      if( pGamePadControlScheme->getController()->getIndex() == joystickDeviceIndex ){
+        //  change control scheme to keyboard
+        auto pControlScheme = std::make_shared<KeyboardControlScheme>();
+        setControlScheme(pControlScheme);          
+
+        Locator::logger->log("Controller removed", Logger::CDEBUG);
+      }
+
+    }
+
+  }
+
+}
+
+void ArenaPlayState::setControlScheme(std::shared_ptr<ControlScheme> pControlScheme){
+  ControlSchemeListener::unsubscribe( m_pControlScheme.get() );
+
+  auto pPlayerInputComponent = dynamic_cast<PlayerInputComponent*>(m_pPlayer->getInputComponent().get());
+  if(!pPlayerInputComponent){
+    throw CapEngineException("Unable to cast InputCompoonent to PlayerInputComponent");
+  }
+
+  pPlayerInputComponent->setControlScheme(pControlScheme.get());
+
+  m_pControlScheme = pControlScheme;
+  m_pControlScheme->enable();
+  ControlSchemeListener::subscribe( m_pControlScheme.get() );
 }

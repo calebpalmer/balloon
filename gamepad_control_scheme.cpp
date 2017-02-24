@@ -105,3 +105,11 @@ std::vector<std::pair<GamePadButtonInput, std::string> > GamePadControlScheme::g
 
   return buttonMap;
 }
+
+int GamePadControlScheme::getControllerID() const{
+  return m_pController->getId();
+}
+
+std::shared_ptr<CapEngine::Controller> GamePadControlScheme::getController(){
+  return m_pController;
+}

@@ -19,6 +19,8 @@ class ArenaPlayState : public CapEngine::GameState, public CapEngine::IEventSubs
  private:
   CapEngine::PlatformerMap buildPlatformerMap(std::string arenaConfigPath, int arenaID);
   void handleBoundaryCollisions(CapEngine::GameObject* pPlayer, CapEngine::Rectangle boundary);
+  void checkControllerConnectionEvents(const SDL_Event event);
+  void setControlScheme(std::shared_ptr<ControlScheme>);
 
   const int GRAVITY = 300;
   
@@ -29,6 +31,7 @@ class ArenaPlayState : public CapEngine::GameState, public CapEngine::IEventSubs
   std::shared_ptr<ControlScheme> m_pControlScheme;
   bool m_startButtonPressed;
   bool m_showDiagnostics;
+  std::vector<std::unique_ptr<CapEngine::Animation> > m_animations;
 };
 
 #endif // ARENA_PLAY_STATE_H

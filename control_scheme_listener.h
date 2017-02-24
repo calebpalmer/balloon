@@ -14,6 +14,8 @@ class ControlSchemeListener {
  public:
   virtual void receiveInput(std::string input) = 0;
   virtual void subscribe(ControlScheme* pControlScheme);
+  virtual void unsubscribe(ControlScheme* pControlScheme);
+  virtual void unsubscribeAll();
   virtual ~ControlSchemeListener();
 
  private:
