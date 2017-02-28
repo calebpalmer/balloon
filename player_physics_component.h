@@ -6,6 +6,7 @@
 class PlayerPhysicsComponent : public CapEngine::PhysicsComponent {
  public:
   enum State{
+    UNKNOWN,
     RUNNING,
     AIRBORN,
     NEUTRAL

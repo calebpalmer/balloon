@@ -23,3 +23,7 @@ void DumbGraphicsComponent::render(GameObject* object){
   int y = position.y - (m_height / 2);
   Locator::videoManager->drawTexture(m_windowID, x, y, m_pTexture);
 }
+
+void DumbGraphicsComponent::update(GameObject* pObject, double ms){
+  // do nothing
+}

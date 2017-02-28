@@ -8,6 +8,7 @@ public:
   DumbGraphicsComponent(Uint32 windowID, int width, int height, CapEngine::Colour colour);
   ~DumbGraphicsComponent();
   void render(CapEngine::GameObject* object) override;
+  void update(CapEngine::GameObject* pObject, double ms) override;
 
 private:
   Uint32 m_windowID;
