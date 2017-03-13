@@ -9,11 +9,21 @@
 using namespace CapEngine;
 using namespace std;
 
+/**
+   FLOW:
+   - update i s called first
+   - then handleCollisions
+   - receive can be called at any time if there is a message to be handled
+ */
+
 void PlayerPhysicsComponent::update(GameObject* object, double timestep){
   Vector velocity = object->getVelocity();
 
   // apply FRICTION if not running or airborn to slowdown
-  if(!m_doRun && m_state == State::NEUTRAL && velocity.getX() != 0.0){
+  if(!m_doRun &&
+     (m_state == State::STAND_LEFT or m_state == State::STAND_RIGHT)
+     && velocity.getX() != 0.0){
+
     // apply friction when running to the right
     if(velocity.getX() > 0.0){
       double deltaX = -RUN_FRICTION * (timestep / 1000);
@@ -87,8 +97,13 @@ bool PlayerPhysicsComponent::handleCollision(GameObject* object, CollisionType c
     Rectangle boundingPolygon = object->boundingPolygon();
     currentPosition.setY(collisionVector.getY() - (boundingPolygon.height / 2));
     object->setPosition(currentPosition);
-    if(m_state != State::RUNNING){
-      m_state = State::NEUTRAL;
+
+    // if(m_state != State::WALK_LEFT and m_state != State::WALK_RIGHT){
+    //   m_state = object->getVelocity().getX() <= 0.0 ? State::STAND_LEFT : State::STAND_RIGHT;
+    // }
+
+    if(m_state == State::AIRBORN){
+      m_state = object->getVelocity().getX() <= 0.0 ? State::STAND_LEFT : State::STAND_RIGHT;
     }
 
     Vector currentVelocity = object->getVelocity();
@@ -105,6 +120,7 @@ bool PlayerPhysicsComponent::handleCollision(GameObject* object, CollisionType c
     acceleration.setY(0.0);
     object->setAcceleration(acceleration);
 
+    return true;
   }
   return false;
 }
@@ -194,7 +210,7 @@ void PlayerPhysicsComponent::handleRightMessage(GameObject* object){
       m_doRun = true;
       velocity.setX(RUN_VELOCITY);
       object->setVelocity(velocity);
-      m_state = State::RUNNING;
+      m_state = State::WALK_RIGHT;
     }
     // If we ARE airborn, apply an acceleration to the turning
     else{
@@ -215,13 +231,15 @@ void PlayerPhysicsComponent::handleRightMessage(GameObject* object){
  */
 void PlayerPhysicsComponent::handleLeftMessage(GameObject* object){
   Vector velocity = object->getVelocity();
+
   // If not airborn, then we can run and turn at normal velocity
   if(m_state != State::AIRBORN){
     m_doRun = true;
     velocity.setX(-RUN_VELOCITY);
-    m_state = State::RUNNING;
+    m_state = State::WALK_LEFT;
     object->setVelocity(velocity);
   }
+
   // if AIRBORN
   else{
     // set a flag to be checked on next JUMP message
@@ -244,12 +262,16 @@ void PlayerPhysicsComponent::handleStopLeftRightMessage(GameObject* object){
   m_doAirRightTurn = false;
   m_doAirLeftTurn = false;
   Vector velocity = object->getVelocity();
+
   // on ground
   if(m_state != State::AIRBORN){
+    // Update State
+    m_state = velocity.getX() <= 0.0 ? State::STAND_LEFT : State::STAND_RIGHT;
+    
     velocity.setX(0.0);
     object->setVelocity(velocity);
-    m_state = State::NEUTRAL;
   }
+
   // in air
   else{
     // turn off in air turn acceleration
@@ -269,6 +291,7 @@ void PlayerPhysicsComponent::handleStopLeftRightMessage(GameObject* object){
 void PlayerPhysicsComponent::handleHorizontalBoundaryCollisionMessage(GameObject* object, CollisionType collisionType){
   CapEngine::Vector currentPosition = object->getPosition();
   CapEngine::real currentX = currentPosition.getX();
+
   if(collisionType == COLLISION_LEFT){
     currentPosition.setX(currentX + 1);
   }

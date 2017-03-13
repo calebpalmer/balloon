@@ -9,12 +9,16 @@ class PlayerPhysicsComponent : public CapEngine::PhysicsComponent {
     UNKNOWN,
     RUNNING,
     AIRBORN,
+    WALK_RIGHT,
+    WALK_LEFT,
+    STAND_RIGHT,
+    STAND_LEFT,
     NEUTRAL
   };
 
  PlayerPhysicsComponent() : m_doRun(false),
     m_doAirLeftTurn(false), m_doAirRightTurn(false),
-    m_state(NEUTRAL){}
+    m_state(STAND_RIGHT){}
   void update(CapEngine::GameObject* object, double timestep) override;
   CapEngine::Rectangle boundingPolygon(const CapEngine::GameObject* object) const override;
   bool handleCollision(CapEngine::GameObject* object, CapEngine::CollisionType,

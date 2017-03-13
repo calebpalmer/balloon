@@ -9,7 +9,56 @@
 using namespace CapEngine;
 
 const std::string kWalkRightFrameName = "Walk Right";
-const std::string kStandingFrame = "Stand Right";
+const std::string kWalkLeftFrameName = "Walk Left";
+const std::string kStandRightFrame = "Stand Right";
+const std::string kStandLeftFrame = "Stand Left";
+const std::string kJumpRightFrame = "Jump Right";
+const std::string kJumpLeftFrame = "Jump Left";
+
+namespace {
+
+  std::string decodeStateToFrameName(PlayerPhysicsComponent::State state, PlayerPhysicsComponent::State previousState){
+    std::string frameName = "";
+    switch(state){
+    case PlayerPhysicsComponent::WALK_RIGHT:
+      frameName = kWalkRightFrameName;
+      break;
+    case PlayerPhysicsComponent::WALK_LEFT:
+      frameName = kWalkLeftFrameName;
+      break;
+    case PlayerPhysicsComponent::STAND_RIGHT:
+      frameName = kStandRightFrame;
+      break;
+    case PlayerPhysicsComponent::STAND_LEFT:
+      frameName = kStandLeftFrame;
+      break;
+    case PlayerPhysicsComponent::NEUTRAL:
+      frameName = kStandRightFrame;
+      break;
+    case PlayerPhysicsComponent::AIRBORN:
+      // TODO update to have it's own animation
+      if(previousState == PlayerPhysicsComponent::STAND_RIGHT
+	 || previousState == PlayerPhysicsComponent::WALK_RIGHT){
+
+	frameName = kJumpRightFrame;
+      }
+      else if(previousState == PlayerPhysicsComponent::STAND_LEFT
+	      || previousState == PlayerPhysicsComponent::WALK_LEFT){
+
+	frameName = kJumpLeftFrame;
+      }
+      else if(previousState == PlayerPhysicsComponent::AIRBORN){
+
+      }
+      break;
+    default:
+      frameName = "Unknown";
+      break;
+    }
+
+    return frameName;
+  }
+} // End anonymous namespace
 
 PlayerGraphicsComponent::PlayerGraphicsComponent(Uint32 windowID, int width, int height) :
   m_windowID(windowID), m_width(width), m_timeMS(0.0), m_currentFrame(0), m_currentRow(0),
@@ -34,22 +83,10 @@ void PlayerGraphicsComponent::update(GameObject* pObject, double ms){
   auto pPlayerPhysicsComponent = dynamic_cast<PlayerPhysicsComponent*>(pPhysicsComponent.get());
   assert(pPlayerPhysicsComponent != nullptr);
 	 
-  PlayerPhysicsComponent::State previousState = m_state;
+  m_previousState = m_state;
   m_state = pPlayerPhysicsComponent->getState();
 
-  std::string frameName = "";
-  switch(m_state){
-  case PlayerPhysicsComponent::RUNNING:
-    frameName = kWalkRightFrameName;
-    break;
-  case PlayerPhysicsComponent::NEUTRAL:
-    frameName = kStandingFrame;
-    break;
-  default:
-    frameName = "Unknown";
-    break;
-  }
-
+  std::string frameName = decodeStateToFrameName(m_state, m_previousState);
   
   Image* pImage = Locator::assetManager->getImage(ASSET_PLAYER_TEXTURE);
   if(pImage->frames.find(frameName) != pImage->frames.end()){
@@ -58,7 +95,7 @@ void PlayerGraphicsComponent::update(GameObject* pObject, double ms){
 
     // update current time
     // new animation
-    if(m_state != previousState){
+    if(m_state != m_previousState){
       m_timeMS = 0.0;
       m_currentRow = frame.rowNum;
       m_currentFrame = 0;

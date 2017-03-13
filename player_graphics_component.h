@@ -21,6 +21,7 @@ private:
   int m_currentFrame;
   int m_currentRow;
   PlayerPhysicsComponent::State m_state;
+  PlayerPhysicsComponent::State m_previousState;
 };
 
 #endif // PLAYER_GRAPHICS_COMPONENT

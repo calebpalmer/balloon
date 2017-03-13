@@ -55,6 +55,18 @@ CapEngine::Surface* Diagnostics::getStateSurface(PlayerPhysicsComponent::State s
   case PlayerPhysicsComponent::RUNNING:
     stateDescription = "RUNNING";
     break;
+  case PlayerPhysicsComponent::WALK_LEFT:
+    stateDescription = "WALK_LEFT";
+    break;
+  case PlayerPhysicsComponent::WALK_RIGHT:
+    stateDescription = "WALK_RIGHT";
+    break;
+  case PlayerPhysicsComponent::STAND_LEFT:
+    stateDescription = "STAND_LEFT";
+    break;
+  case PlayerPhysicsComponent::STAND_RIGHT:
+    stateDescription = "STAND_RIGHT";
+    break;
   default:
     stateDescription = "Unknown";
     break;
