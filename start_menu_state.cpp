@@ -29,7 +29,7 @@ bool StartMenuState::onLoad(){
   unique_ptr<ButtonGroup> pButtonGroup(new ButtonGroup);
   unique_ptr<Button> pStoryButton(
 				      new TextButton(m_windowID, "Single Player", fontDir.str(), 65,
-						     Vector(486.947, CARTESIAN_Y_TO_WINDOW_Y(Locator::videoManager->getWindowHeight(), 285.151))
+						     Vector(486.947, CARTESIAN_Y_TO_WINDOW_Y(Locator::videoManager->getWindowHeight(m_windowID), 285.151))
 						     , buttonInactiveColour, buttonActiveColour
 						     ));
   //dynamic_cast<TextButton*>(pStoryButton.get())->setIndicator("res/textures/turtle_shell.png");
@@ -37,7 +37,7 @@ bool StartMenuState::onLoad(){
 
   unique_ptr<Button> pArenaButton(
 				      new TextButton(m_windowID, "2 Player", fontDir.str(), 65,
-						     Vector(489.343, CARTESIAN_Y_TO_WINDOW_Y(Locator::videoManager->getWindowHeight(), 204.521))
+						     Vector(489.343, CARTESIAN_Y_TO_WINDOW_Y(Locator::videoManager->getWindowHeight(m_windowID), 204.521))
 						     , buttonInactiveColour, buttonActiveColour
 						     ));
   //dynamic_cast<TextButton*>(pArenaButton.get())->setIndicator("res/textures/turtle_shell.png");
@@ -45,7 +45,7 @@ bool StartMenuState::onLoad(){
 
   unique_ptr<Button> pQuitButton(
 				 new TextButton(m_windowID, "Quit", fontDir.str(), 65,
-						Vector(520.670, CARTESIAN_Y_TO_WINDOW_Y(Locator::videoManager->getWindowHeight(), 119.252))
+						Vector(520.670, CARTESIAN_Y_TO_WINDOW_Y(Locator::videoManager->getWindowHeight(m_windowID), 119.252))
 						, buttonInactiveColour, buttonActiveColour
 						));
   //dynamic_cast<TextButton*>(pQuitButton.get())->setIndicator("res/textures/turtle_shell.png");
@@ -98,7 +98,7 @@ void StartMenuState::update(double ms){
     CapEngine::end();
   }
   if(m_startArenaGame){
-    int arenaId = 2;
+    int arenaId = 3;
     std::unique_ptr<GameState> pStartArenaState(new ArenaPlayState(m_windowID, arenaId));
     CapEngine::switchState(std::move(pStartArenaState));
   }

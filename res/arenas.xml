@@ -15,5 +15,13 @@
       <spawn_point id="1" x="130" y="600" />
     </spawn_points>
   </arena>
-  
+
+    <arena id="3">
+    <texture>2004</texture>
+    <collisions>2005</collisions>
+    <spawn_points>
+      <spawn_point id="1" x="15" y="215" />
+    </spawn_points>
+  </arena>
+
 </arenas>

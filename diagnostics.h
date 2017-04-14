@@ -16,6 +16,7 @@ struct DiagnosticData {
   CapEngine::Vector position;
   CapEngine::Vector velocity;
   CapEngine::Vector acceleration;
+  CapEngine::Matrix mainViewTransform;
 };
 
 class Diagnostics {
@@ -30,6 +31,8 @@ class Diagnostics {
   static CapEngine::Texture* getTexture(CapEngine::Surface* surface);
   static CapEngine::Texture* getVectorTexture(CapEngine::Vector vector, std::string label,
 					      std::string font, int fontSize);
+  static std::vector<CapEngine::Texture*> getMatrixTextures(CapEngine::Matrix, const std::string& label,
+					      const std::string& font, int fontSize);
   static void drawTextures(std::vector<CapEngine::Texture*> textures, Uint32 windowID, int x, int y, int padding);
 };
 #endif // DIAGNOSTICS_H

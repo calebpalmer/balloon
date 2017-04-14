@@ -57,7 +57,7 @@ bool PauseState::onLoad(){
   unique_ptr<TextButton> pMainMenuButton(new TextButton(m_windowID, "Main Menu", "res/fonts/tahoma.ttf", 40, Vector(0,0)));
   int numItems = 2;
   int xres, yres;
-  Locator::videoManager->getWindowResolution(&xres, &yres);
+  Locator::videoManager->getWindowResolution(m_windowID, &xres, &yres);
   int maxwidth = pMainMenuButton->getWidth();
   int xStart = (xres / 2.0) - (maxwidth / 2.0);
   int menuItemSpacing = 10;

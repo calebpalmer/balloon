@@ -92,7 +92,9 @@ void ArenaPlayState::render(){
     CapEngine::Vector position = m_pPlayer->getPosition();
     CapEngine::Vector velocity = m_pPlayer->getVelocity();
     CapEngine::Vector acceleration = m_pPlayer->getAcceleration();
-    DiagnosticData diagData= {fps, state, position, velocity, acceleration};
+    CapEngine::Matrix mainTransform =
+      CapEngine::Locator::videoManager->getViewport(m_windowID).m_transformationMatrix;
+    DiagnosticData diagData= {fps, state, position, velocity, acceleration, mainTransform};
     int xStart = 0;
     int yStart = 0;
     string font = "res/fonts/tahoma.ttf";
@@ -115,10 +117,21 @@ void ArenaPlayState::update(double ms){
   }
 
   // check for boundary collisions
-  CapEngine::Rectangle arenaMBR = {0, 0, 1200, 800};
+  Rect mapDims = {0, 0, m_platformerMap.getWidth(), m_platformerMap.getHeight()};
+  CapEngine::Rectangle arenaMBR(mapDims);
   this->handleBoundaryCollisions(pUpdatedPlayer.get(), arenaMBR);
 
+
   m_pPlayer = std::move(pUpdatedPlayer);
+
+  // center the viewport
+  Rect playerRect = m_pPlayer->boundingPolygon().toRect();
+  CapEngine::Viewport viewport =
+    CapEngine::Locator::videoManager->getViewport(m_windowID);
+  viewport.centerOnObject(playerRect, mapDims);
+  CapEngine::Locator::videoManager->setViewport(m_windowID, viewport);
+  
+
 
   // update animations
   auto animationIter= m_animations.begin();

@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <sstream>
+#include <algorithm>
 
 /** 
     Displays diagnostics info on the given Window
@@ -34,6 +35,10 @@ void Diagnostics::display(Uint32 windowID, DiagnosticData data, double x, double
   // draw acceleration
   CapEngine::Texture* accelerationTexture = getVectorTexture(data.acceleration, "Acceleration: ", font, fontSize);
   textures.push_back(accelerationTexture);
+
+  // draw matrix
+  std::vector<CapEngine::Texture*> matrixTextures = getMatrixTextures(data.mainViewTransform, "Matrix", font, fontSize);
+  textures.insert(textures.end(), matrixTextures.begin(), matrixTextures.end());
 
   drawTextures(textures, windowID, x, y, PADDING);
 }
@@ -106,13 +111,34 @@ CapEngine::Texture* Diagnostics::getVectorTexture(CapEngine::Vector vector, std:
   return texture;
 }
 
+std::vector<CapEngine::Texture*> Diagnostics::getMatrixTextures(CapEngine::Matrix matrix, const std::string& label,
+						  const std::string& font, int fontSize)
+{
+  std::vector<CapEngine::Texture*> textures;
+
+  CapEngine::Surface* labelSurface = getSurface(label, font, fontSize);
+  CapEngine::Texture* labelTexture = CapEngine::Locator::videoManager->createTextureFromSurface(labelSurface, true);
+  //CapEngine::Locator::videoManager->closeSurface(labelSurface);
+  textures.push_back(labelTexture);
+  CapEngine::Texture* rowOneTexture = getVectorTexture(matrix.getRowVector(0), "", font, fontSize);
+  textures.push_back(rowOneTexture);
+  CapEngine::Texture* rowTwoTexture = getVectorTexture(matrix.getRowVector(1), "", font, fontSize);
+  textures.push_back(rowTwoTexture);
+  CapEngine::Texture* rowThreeTexture = getVectorTexture(matrix.getRowVector(2), "", font, fontSize);
+  textures.push_back(rowThreeTexture);  
+  CapEngine::Texture* rowFourTexture = getVectorTexture(matrix.getRowVector(3), "", font, fontSize);
+  textures.push_back(rowFourTexture);
+
+  return textures;
+}
+
 /**
    draws textures starting at given (x,y).  Frees the texture after drawing it.
  */
 void Diagnostics::drawTextures(std::vector<CapEngine::Texture*> textures, Uint32 windowID, int x, int y, int padding){
   int yStart = y;
   for(auto & i : textures){
-    CapEngine::Locator::videoManager->drawTexture(windowID, x, yStart, i);
+    CapEngine::Locator::videoManager->drawTexture(windowID, x, yStart, i, nullptr, false);
     
     CapEngine::real textureHeight = CapEngine::Locator::videoManager->getTextureHeight(i);
     yStart = yStart + textureHeight + padding;
