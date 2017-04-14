@@ -18,6 +18,7 @@ const std::string kJumpLeftFrame = "Jump Left";
 namespace {
 
   std::string decodeStateToFrameName(PlayerPhysicsComponent::State state, PlayerPhysicsComponent::State previousState){
+    static std::string previousFrame = "";
     std::string frameName = "";
     switch(state){
     case PlayerPhysicsComponent::WALK_RIGHT:
@@ -48,14 +49,18 @@ namespace {
 	frameName = kJumpLeftFrame;
       }
       else if(previousState == PlayerPhysicsComponent::AIRBORN){
-
+	frameName = previousFrame;
       }
       break;
+    case PlayerPhysicsComponent::UNKNOWN:
+      Locator::logger->log("UNKNOWN phsyics state received", Logger::CDEBUG);
+      frameName = "PlayerPhysicsComponent::UNKNOWN not handled";
     default:
       frameName = "Unknown";
       break;
     }
 
+    previousFrame = frameName;
     return frameName;
   }
 } // End anonymous namespace
