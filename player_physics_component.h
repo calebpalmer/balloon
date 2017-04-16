@@ -8,7 +8,8 @@ class PlayerPhysicsComponent : public CapEngine::PhysicsComponent {
   enum State{
     UNKNOWN,
     RUNNING,
-    AIRBORN,
+    AIRBORN_LEFT,
+    AIRBORN_RIGHT,
     WALK_RIGHT,
     WALK_LEFT,
     STAND_RIGHT,

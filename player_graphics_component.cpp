@@ -36,21 +36,11 @@ namespace {
     case PlayerPhysicsComponent::NEUTRAL:
       frameName = kStandRightFrame;
       break;
-    case PlayerPhysicsComponent::AIRBORN:
-      // TODO update to have it's own animation
-      if(previousState == PlayerPhysicsComponent::STAND_RIGHT
-	 || previousState == PlayerPhysicsComponent::WALK_RIGHT){
-
-	frameName = kJumpRightFrame;
-      }
-      else if(previousState == PlayerPhysicsComponent::STAND_LEFT
-	      || previousState == PlayerPhysicsComponent::WALK_LEFT){
-
-	frameName = kJumpLeftFrame;
-      }
-      else if(previousState == PlayerPhysicsComponent::AIRBORN){
-	frameName = previousFrame;
-      }
+    case PlayerPhysicsComponent::AIRBORN_LEFT:
+      frameName = kJumpLeftFrame;
+      break;
+    case PlayerPhysicsComponent::AIRBORN_RIGHT:
+      frameName = kJumpRightFrame;
       break;
     case PlayerPhysicsComponent::UNKNOWN:
       Locator::logger->log("UNKNOWN phsyics state received", Logger::CDEBUG);

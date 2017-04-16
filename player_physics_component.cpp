@@ -102,7 +102,7 @@ bool PlayerPhysicsComponent::handleCollision(GameObject* object, CollisionType c
     //   m_state = object->getVelocity().getX() <= 0.0 ? State::STAND_LEFT : State::STAND_RIGHT;
     // }
 
-    if(m_state == State::AIRBORN){
+    if(m_state == State::AIRBORN_LEFT || m_state == State::AIRBORN_RIGHT){
       m_state = object->getVelocity().getX() <= 0.0 ? State::STAND_LEFT : State::STAND_RIGHT;
     }
 
@@ -187,17 +187,21 @@ void PlayerPhysicsComponent::handleJumpMessage(GameObject* object){
   if(m_doAirRightTurn){
     double newHorizontalVelocity = JUMP_HORIZONTAL_VELOCITY;
     velocity.setX(newHorizontalVelocity);
+    m_state = State::AIRBORN_RIGHT;
   }
   // In air left turn
-  if(m_doAirLeftTurn){
+  else if(m_doAirLeftTurn){
     double newHorizontalVelocity = (-1) * JUMP_HORIZONTAL_VELOCITY;
     velocity.setX(newHorizontalVelocity);
+    m_state = State::AIRBORN_LEFT;
   }
 
+  else{
+    m_state = velocity.x < 0.0 ? State::AIRBORN_LEFT : State::AIRBORN_RIGHT;
+  }
+  
   // set the new velocity
   object->setVelocity(velocity);
-
-  m_state = State::AIRBORN;
 }
 
 /**
@@ -206,7 +210,7 @@ void PlayerPhysicsComponent::handleJumpMessage(GameObject* object){
 void PlayerPhysicsComponent::handleRightMessage(GameObject* object){
     Vector velocity = object->getVelocity();
     // If not airborn, then we can run and turn at normal velocity
-    if(m_state != State::AIRBORN){
+    if(m_state != State::AIRBORN_LEFT && m_state != State::AIRBORN_RIGHT){
       m_doRun = true;
       velocity.setX(RUN_VELOCITY);
       object->setVelocity(velocity);
@@ -233,7 +237,7 @@ void PlayerPhysicsComponent::handleLeftMessage(GameObject* object){
   Vector velocity = object->getVelocity();
 
   // If not airborn, then we can run and turn at normal velocity
-  if(m_state != State::AIRBORN){
+  if(m_state != State::AIRBORN_LEFT && m_state != State::AIRBORN_RIGHT){
     m_doRun = true;
     velocity.setX(-RUN_VELOCITY);
     m_state = State::WALK_LEFT;
@@ -264,7 +268,7 @@ void PlayerPhysicsComponent::handleStopLeftRightMessage(GameObject* object){
   Vector velocity = object->getVelocity();
 
   // on ground
-  if(m_state != State::AIRBORN){
+  if(m_state != State::AIRBORN_LEFT && m_state != State::AIRBORN_RIGHT){
     // Update State
     m_state = velocity.getX() <= 0.0 ? State::STAND_LEFT : State::STAND_RIGHT;
     
